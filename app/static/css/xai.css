@@ -1,0 +1,1252 @@
+/* ── DataViz Pro — XAI (Explainable AI) CSS ─────────────────── */
+
+/* ================================================================
+   XAI — Explainable AI Workspace Styles
+
+   Covers: Model selection grid, workspace layout, tab navigation,
+   chart containers, feature importance tables, contribution lists,
+   prediction displays, probability bars, method badges, warnings,
+   cluster profiles, comparison tables, empty/loading/error states.
+   ================================================================ */
+
+/* ── Workspace Layout ───────────────────────────────────────────── */
+
+.xai-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* ── Card Component ────────────────────────────────────────────── */
+
+.xai-card {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.xai-card:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.xai-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-border, #dce5e9);
+}
+
+.xai-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-card-title svg {
+    color: var(--color-primary, #0f766e);
+    flex-shrink: 0;
+}
+
+.xai-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.xai-card-body {
+    padding: 1.25rem;
+}
+
+/* ── Tab Navigation ────────────────────────────────────────────── */
+
+.xai-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--color-border, #dce5e9);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.xai-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.xai-tab-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--color-text-secondary, #475569);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+    user-select: none;
+}
+
+.xai-tab-btn:hover {
+    color: var(--color-text, #0F172A);
+    background: rgba(15, 118, 110, 0.04);
+}
+
+.xai-tab-btn.active {
+    color: var(--color-primary, #0f766e);
+    font-weight: 600;
+    border-bottom-color: var(--color-primary, #0f766e);
+}
+
+.xai-tab-panel {
+    display: none;
+}
+
+.xai-tab-panel.active {
+    display: block;
+}
+
+/* ── Chart Container ───────────────────────────────────────────── */
+
+.xai-chart-container {
+    width: 100%;
+    min-height: 380px;
+    padding: 0.5rem 0;
+    border-radius: var(--radius-sm);
+}
+
+.xai-chart-container.xai-chart-tall {
+    min-height: 480px;
+}
+
+.xai-chart-container.xai-chart-short {
+    min-height: 280px;
+}
+
+/* ── Model Selection Grid ──────────────────────────────────────── */
+
+.xai-model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.xai-model-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: var(--color-surface, #fff);
+    border: 2px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.xai-model-card:hover {
+    border-color: rgba(15, 118, 110, 0.4);
+    box-shadow: 0 4px 16px rgba(15, 118, 110, 0.1);
+    transform: translateY(-2px);
+}
+
+.xai-model-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.xai-model-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: rgba(15, 118, 110, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary, #0f766e);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.xai-model-card:hover .xai-model-card-icon {
+    background: var(--color-primary, #0f766e);
+    color: #fff;
+}
+
+.xai-model-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.xai-model-card-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text, #0F172A);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.xai-model-card-type {
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #697d8b);
+    margin-top: 0.1rem;
+}
+
+.xai-model-card-badges {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.xai-model-card-metrics {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ── Method Badges ─────────────────────────────────────────────── */
+
+.xai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.xai-badge.badge-shap {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.xai-badge.badge-lime {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.xai-badge.badge-native {
+    background: #e6eef2;
+    color: #6D28D9;
+}
+
+.xai-badge.badge-permutation {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.xai-badge.badge-classification {
+    background: #e6eef2;
+    color: #31596d;
+}
+
+.xai-badge.badge-regression {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+/* ── Metric Display ────────────────────────────────────────────── */
+
+.xai-metric-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.xai-metric-row + .xai-metric-row {
+    margin-top: 0.5rem;
+}
+
+.xai-metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text, #0F172A);
+    line-height: 1.2;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.xai-metric-value.metric-good {
+    color: #059669;
+}
+
+.xai-metric-value.metric-moderate {
+    color: #D97706;
+}
+
+.xai-metric-value.metric-poor {
+    color: #DC2626;
+}
+
+.xai-metric-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-text-muted, #697d8b);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+/* ── Prediction Card ───────────────────────────────────────────── */
+
+.xai-prediction-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: rgba(15, 118, 110, 0.04);
+    border: 1px solid rgba(15, 118, 110, 0.15);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.xai-prediction-card .prediction-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted, #697d8b);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.xai-prediction-card .prediction-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--color-primary, #0f766e);
+    line-height: 1.1;
+}
+
+.xai-prediction-card .prediction-conf {
+    font-size: 0.88rem;
+    color: var(--color-text-secondary, #475569);
+}
+
+.xai-prediction-card .prediction-row-idx {
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #697d8b);
+}
+
+/* ── Probability Bar ───────────────────────────────────────────── */
+
+.xai-probability-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.xai-probability-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.xai-probability-item-label {
+    min-width: 100px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text, #0F172A);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.xai-probability-item-track {
+    flex: 1;
+    height: 22px;
+    background: #F3F4F6;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.xai-probability-item-fill {
+    height: 100%;
+    border-radius: var(--radius-sm);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.xai-probability-item-fill.prob-highest {
+    background: linear-gradient(90deg, var(--color-primary, #0f766e), #818CF8);
+}
+
+.xai-probability-item-fill.prob-other {
+    background: linear-gradient(90deg, #C7D2FE, #d5eeea);
+}
+
+.xai-probability-item-value {
+    min-width: 52px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-align: right;
+    color: var(--color-text-secondary, #475569);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+/* ── Feature Contributions ─────────────────────────────────────── */
+
+.xai-contribution-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.xai-contribution-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    transition: background 0.15s ease;
+}
+
+.xai-contribution-item:hover {
+    background: var(--color-bg-alt, #f7f9fa);
+}
+
+.xai-contribution-feature {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-text, #0F172A);
+    font-weight: 500;
+}
+
+.xai-contribution-value {
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.xai-contribution-positive .xai-contribution-value {
+    color: #059669;
+}
+
+.xai-contribution-positive .xai-contribution-bar {
+    background: linear-gradient(90deg, #D1FAE5, #A7F3D0);
+}
+
+.xai-contribution-negative .xai-contribution-value {
+    color: #DC2626;
+}
+
+.xai-contribution-negative .xai-contribution-bar {
+    background: linear-gradient(90deg, #FEE2E2, #FECACA);
+}
+
+.xai-contribution-bar-track {
+    width: 100px;
+    height: 8px;
+    background: #F3F4F6;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.xai-contribution-bar {
+    height: 100%;
+    border-radius: var(--radius-xs);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Warning Box ───────────────────────────────────────────────── */
+
+.xai-warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: #92400E;
+    margin: 0.5rem 0;
+}
+
+.xai-warning-box svg {
+    flex-shrink: 0;
+    color: #D97706;
+    margin-top: 0.1rem;
+}
+
+.xai-warning-box-title {
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+    color: #92400E;
+}
+
+.xai-warning-box-message {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #A16207;
+}
+
+/* ── Loading State ─────────────────────────────────────────────── */
+
+.xai-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    gap: 1rem;
+    color: var(--color-text-muted, #697d8b);
+}
+
+.xai-loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-border, #dce5e9);
+    border-top-color: var(--color-primary, #0f766e);
+    border-radius: 50%;
+    animation: xai-spin 0.7s linear infinite;
+}
+
+@keyframes xai-spin {
+    to { transform: rotate(360deg); }
+}
+
+.xai-loading-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-secondary, #475569);
+}
+
+.xai-loading-subtext {
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #697d8b);
+}
+
+/* ── Empty State ───────────────────────────────────────────────── */
+
+.xai-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--color-text-muted, #697d8b);
+}
+
+.xai-empty svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+}
+
+.xai-empty-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #475569);
+    margin-bottom: 0.35rem;
+}
+
+.xai-empty-desc {
+    font-size: 0.88rem;
+    max-width: 380px;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.xai-empty-action {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* ── Error State ───────────────────────────────────────────────── */
+
+.xai-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: #991B1B;
+    margin: 0.5rem 0;
+}
+
+.xai-error svg {
+    flex-shrink: 0;
+    color: #EF4444;
+    margin-top: 0.1rem;
+}
+
+.xai-error-title {
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.xai-error-message {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #B91C1C;
+}
+
+/* ── Two-Column Layout ─────────────────────────────────────────── */
+
+.xai-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+/* ── Feature Table ─────────────────────────────────────────────── */
+
+.xai-feature-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.xai-feature-table th {
+    position: sticky;
+    top: 0;
+    background: #F9FAFB;
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted, #697d8b);
+    border-bottom: 2px solid var(--color-border, #dce5e9);
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.xai-feature-table th.text-right,
+.xai-feature-table td.text-right {
+    text-align: right;
+}
+
+.xai-feature-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid #F3F4F6;
+    color: var(--color-text, #0F172A);
+    vertical-align: middle;
+}
+
+.xai-feature-table tr:hover td {
+    background: rgba(15, 118, 110, 0.03);
+}
+
+.xai-feature-table tr:last-child td {
+    border-bottom: none;
+}
+
+.xai-feature-table .ft-rank {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #697d8b);
+}
+
+.xai-feature-table .ft-name {
+    font-weight: 600;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-feature-table .ft-value {
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85rem;
+}
+
+.xai-feature-table .ft-bar-wrap {
+    min-width: 120px;
+}
+
+.xai-feature-table .ft-bar-track {
+    height: 8px;
+    background: #F3F4F6;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+}
+
+.xai-feature-table .ft-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-xs);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.xai-feature-table-scroll {
+    max-height: 500px;
+    overflow: auto;
+}
+
+/* ── Method Card ───────────────────────────────────────────────── */
+
+.xai-method-card {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.xai-method-card:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.xai-method-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border, #dce5e9);
+}
+
+.xai-method-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-method-card-body {
+    padding: 1rem;
+}
+
+/* ── Row Selector ──────────────────────────────────────────────── */
+
+.xai-row-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.xai-row-selector label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-secondary, #475569);
+    white-space: nowrap;
+}
+
+.xai-row-selector input[type="number"] {
+    width: 80px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #0F172A);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.xai-row-selector input[type="number"]:focus {
+    outline: none;
+    border-color: var(--color-primary, #0f766e);
+    box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+}
+
+.xai-row-selector .xai-row-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface, #fff);
+    color: var(--color-text-secondary, #475569);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.xai-row-selector .xai-row-btn:hover {
+    border-color: var(--color-primary, #0f766e);
+    color: var(--color-primary, #0f766e);
+    background: rgba(15, 118, 110, 0.04);
+}
+
+.xai-row-selector .xai-row-btn:active {
+    transform: scale(0.95);
+}
+
+.xai-row-selector .xai-row-go-btn {
+    padding: 0.4rem 0.85rem;
+    width: auto;
+    background: var(--color-primary, #0f766e);
+    color: #fff;
+    border-color: var(--color-primary, #0f766e);
+}
+
+.xai-row-selector .xai-row-go-btn:hover {
+    background: var(--color-primary-hover, #115e59);
+    color: #fff;
+    border-color: var(--color-primary-hover, #115e59);
+    box-shadow: 0 2px 8px rgba(15, 118, 110, 0.3);
+}
+
+.xai-row-info {
+    font-size: 0.82rem;
+    color: var(--color-text-muted, #697d8b);
+}
+
+/* ── Configuration Row ─────────────────────────────────────────── */
+
+.xai-config-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 0;
+}
+
+.xai-config-row label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #475569);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.xai-config-row select,
+.xai-config-row input[type="number"] {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #0F172A);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    min-width: 80px;
+}
+
+.xai-config-row select:focus,
+.xai-config-row input[type="number"]:focus {
+    outline: none;
+    border-color: var(--color-primary, #0f766e);
+    box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+}
+
+.xai-config-row .xai-config-sep {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border, #dce5e9);
+}
+
+/* ── Comparison Table ──────────────────────────────────────────── */
+
+.xai-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.xai-comparison-table th {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted, #697d8b);
+    border-bottom: 2px solid var(--color-border, #dce5e9);
+    background: #F9FAFB;
+}
+
+.xai-comparison-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid #F3F4F6;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-comparison-table tr:hover td {
+    background: rgba(15, 118, 110, 0.03);
+}
+
+.xai-comparison-table tr:last-child td {
+    border-bottom: none;
+}
+
+.xai-comparison-table .ct-feature {
+    font-weight: 600;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-comparison-table .ct-value {
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-weight: 500;
+}
+
+.xai-comparison-table .ct-diff-positive {
+    color: #059669;
+    font-weight: 600;
+}
+
+.xai-comparison-table .ct-diff-negative {
+    color: #DC2626;
+    font-weight: 600;
+}
+
+.xai-comparison-table .ct-method-label {
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+/* ── Cluster Card ──────────────────────────────────────────────── */
+
+.xai-cluster-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-md);
+    transition: box-shadow 0.2s ease;
+}
+
+.xai-cluster-card:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.xai-cluster-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--color-border, #dce5e9);
+}
+
+.xai-cluster-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.xai-cluster-card-icon.cluster-0 { background: #d5eeea; color: #134e4a; }
+.xai-cluster-card-icon.cluster-1 { background: #D1FAE5; color: #065F46; }
+.xai-cluster-card-icon.cluster-2 { background: #FEF3C7; color: #92400E; }
+.xai-cluster-card-icon.cluster-3 { background: #FCE7F3; color: #9D174D; }
+.xai-cluster-card-icon.cluster-4 { background: #DBEAFE; color: #1E40AF; }
+.xai-cluster-card-icon.cluster-5 { background: #FEE2E2; color: #991B1B; }
+
+.xai-cluster-card-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-cluster-card-size {
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #697d8b);
+}
+
+.xai-cluster-card-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+}
+
+.xai-cluster-stat {
+    text-align: center;
+    padding: 0.5rem;
+    background: var(--color-bg-alt, #f7f9fa);
+    border-radius: var(--radius-sm);
+}
+
+.xai-cluster-stat-value {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text, #0F172A);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.xai-cluster-stat-label {
+    font-size: 0.68rem;
+    color: var(--color-text-muted, #697d8b);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* ── Business Explanation ──────────────────────────────────────── */
+
+.xai-business-explanation {
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-alt, #f7f9fa);
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-business-explanation-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #475569);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.xai-business-explanation-text {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--color-text, #0F172A);
+}
+
+.xai-business-explanation-text strong {
+    color: var(--color-primary, #0f766e);
+}
+
+.xai-business-explanation-text .be-positive {
+    color: #059669;
+    font-weight: 600;
+}
+
+.xai-business-explanation-text .be-negative {
+    color: #DC2626;
+    font-weight: 600;
+}
+
+/* ── Stats Grid ────────────────────────────────────────────────── */
+
+.xai-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.xai-stat-item {
+    text-align: center;
+    padding: 0.85rem 0.75rem;
+    background: var(--color-bg-alt, #f7f9fa);
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-md);
+}
+
+.xai-stat-item.highlight {
+    border-color: rgba(15, 118, 110, 0.3);
+    background: rgba(15, 118, 110, 0.03);
+}
+
+/* ── Info Box (XAI-specific) ───────────────────────────────────── */
+
+.xai-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: #1E40AF;
+    margin: 0.5rem 0;
+}
+
+.xai-info svg {
+    flex-shrink: 0;
+    color: #3B82F6;
+    margin-top: 0.1rem;
+}
+
+.xai-info-title {
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.xai-info-message {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #1E40AF;
+}
+
+/* ── Feature Selector Dropdown ─────────────────────────────────── */
+
+.xai-feature-select {
+    width: 100%;
+    max-width: 280px;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border, #dce5e9);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--color-surface, #fff);
+    color: var(--color-text, #0F172A);
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.xai-feature-select:focus {
+    outline: none;
+    border-color: var(--color-primary, #0f766e);
+    box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .xai-workspace {
+        gap: 0.75rem;
+    }
+
+    .xai-model-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .xai-two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .xai-tabs {
+        padding: 0 0.5rem;
+    }
+
+    .xai-tab-btn {
+        padding: 0.6rem 0.85rem;
+        font-size: 0.82rem;
+    }
+
+    .xai-card-body {
+        padding: 0.75rem;
+    }
+
+    .xai-card-header {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .xai-chart-container {
+        min-height: 280px;
+    }
+
+    .xai-chart-container.xai-chart-tall {
+        min-height: 360px;
+    }
+
+    .xai-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .xai-metric-value {
+        font-size: 1.25rem;
+    }
+
+    .xai-config-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .xai-config-row .xai-config-sep {
+        display: none;
+    }
+
+    .xai-row-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .xai-prediction-card .prediction-value {
+        font-size: 1.75rem;
+    }
+
+    .xai-cluster-card-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .xai-feature-table-scroll {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .xai-workspace {
+        gap: 0.5rem;
+    }
+
+    .xai-tab-btn {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.78rem;
+    }
+
+    .xai-card-header {
+        padding: 0.65rem 0.75rem;
+    }
+
+    .xai-card-body {
+        padding: 0.65rem;
+    }
+
+    .xai-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .xai-chart-container {
+        min-height: 220px;
+    }
+
+    .xai-chart-container.xai-chart-tall {
+        min-height: 280px;
+    }
+
+    .xai-chart-container.xai-chart-short {
+        min-height: 200px;
+    }
+
+    .xai-prediction-card {
+        padding: 1rem;
+    }
+
+    .xai-prediction-card .prediction-value {
+        font-size: 1.5rem;
+    }
+
+    .xai-metric-value {
+        font-size: 1.1rem;
+    }
+
+    .xai-probability-item-label {
+        min-width: 70px;
+        font-size: 0.8rem;
+    }
+
+    .xai-cluster-card-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .xai-empty {
+        padding: 2rem 1rem;
+    }
+
+    .xai-loading {
+        padding: 2rem 1rem;
+    }
+}

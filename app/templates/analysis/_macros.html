@@ -1,0 +1,96 @@
+{# 
+  Shared macros for analysis sub-pages.
+  Usage: {% from "analysis/_macros.html" import analysis_header, analysis_tabs %}
+#}
+
+{% macro analysis_header(dataset, active_tab) %}
+<div class="analysis-page-header">
+    <div class="analysis-breadcrumb">
+        <a href="{{ url_for('analysis.index') }}">Analysis</a>
+        <span class="breadcrumb-sep">/</span>
+        <a href="{{ url_for('datasets.index') }}">{{ dataset.name }}</a>
+    </div>
+    <h1 class="analysis-page-title">
+        <span class="analysis-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        </span>
+        {{ dataset.name }}
+    </h1>
+    <div class="analysis-meta">
+        <span>{{ '{:,.0f}'.format(dataset.row_count) if dataset.row_count else 0 }} rows</span>
+        <span class="meta-sep">|</span>
+        <span>{{ dataset.column_count if dataset.column_count else 0 }} columns</span>
+        <span class="meta-sep">|</span>
+        <span class="format-badge format-badge-{{ dataset.file_format }}">{{ dataset.file_format|upper }}</span>
+    </div>
+</div>
+
+<div class="analysis-tabs">
+    <a href="{{ url_for('analysis.overview', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'overview' %} active{% endif %}" data-section="overview">Overview</a>
+    <a href="{{ url_for('analysis.quality', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'quality' %} active{% endif %}" data-section="quality">Quality</a>
+    <a href="{{ url_for('analysis.statistics', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'statistics' %} active{% endif %}" data-section="statistics">Statistics</a>
+    <a href="{{ url_for('analysis.correlations', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'correlations' %} active{% endif %}" data-section="correlations">Correlations</a>
+    <a href="{{ url_for('analysis.distributions', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'distributions' %} active{% endif %}" data-section="distributions">Distributions</a>
+    <a href="{{ url_for('analysis.outliers', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'outliers' %} active{% endif %}" data-section="outliers">Outliers</a>
+    <a href="{{ url_for('analysis.categorical', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'categorical' %} active{% endif %}" data-section="categorical">Categorical</a>
+    
+    {% set has_dt = false %}
+    {% if dataset.column_info %}
+        {% for col in dataset.column_info %}
+            {% if 'datetime' in col.dtype|string %}
+                {% set has_dt = true %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    {% if has_dt %}
+    <a href="{{ url_for('analysis.timeseries', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'timeseries' %} active{% endif %}" data-section="timeseries">Time Series</a>
+    {% endif %}
+    
+    <a href="{{ url_for('analysis.insights', dataset_id=dataset.id) }}" class="analysis-tab{% if active_tab == 'insights' %} active{% endif %}" data-section="insights">Insights</a>
+</div>
+{% endmacro %}
+
+
+{% macro loading_spinner() %}
+<div class="analysis-loading" id="analysisLoading">
+    <div class="spinner"></div>
+    <span>Loading analysis data...</span>
+</div>
+{% endmacro %}
+
+
+{% macro error_container() %}
+<div class="analysis-error" id="analysisError" style="display:none;">
+    <div class="error-panel">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <span id="analysisErrorMsg">An error occurred while loading analysis data.</span>
+        <button class="btn btn-sm btn-secondary" onclick="location.reload()">Retry</button>
+    </div>
+</div>
+{% endmacro %}
+
+
+{% macro priority_badge(priority) %}
+{% if priority == 'high' %}
+<span class="priority-badge priority-high">High</span>
+{% elif priority == 'medium' %}
+<span class="priority-badge priority-medium">Medium</span>
+{% else %}
+<span class="priority-badge priority-low">Low</span>
+{% endif %}
+{% endmacro %}
+
+
+{% macro type_badge(dtype) %}
+{% if dtype == 'numeric' %}
+<span class="dtype-badge dtype-numeric">Numeric</span>
+{% elif dtype == 'categorical' %}
+<span class="dtype-badge dtype-categorical">Categorical</span>
+{% elif dtype == 'datetime' %}
+<span class="dtype-badge dtype-datetime">Datetime</span>
+{% elif dtype == 'boolean' %}
+<span class="dtype-badge dtype-boolean">Boolean</span>
+{% else %}
+<span class="dtype-badge">{{ dtype }}</span>
+{% endif %}
+{% endmacro %}

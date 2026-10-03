@@ -1,0 +1,10 @@
+<!-- Stat Card Component -->
+<!-- Expects: icon (SVG HTML), label, value, sub (description), color (CSS var) -->
+<div class="kpi-card" style="--kpi-accent: {{ color }}">
+    <div class="kpi-icon">{{ icon | safe }}</div>
+    <div class="kpi-content">
+        <span class="kpi-label">{{ label }}</span>
+        <span class="kpi-value">{{ value }}</span>
+        <span class="kpi-sub">{{ sub }}</span>
+    </div>
+</div>

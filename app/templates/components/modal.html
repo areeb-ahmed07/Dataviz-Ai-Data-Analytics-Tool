@@ -1,0 +1,19 @@
+<!-- Reusable Modal -->
+{% macro modal(id='', title='', size='md') %}
+<div class="modal-overlay" id="{{ id or 'modal' }}" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-panel modal-{{ size }}">
+        <div class="modal-header">
+            <h3 class="modal-title">{{ title }}</h3>
+            <button class="modal-close-btn" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            {% block modal_body %}{% endblock %}
+        </div>
+        {% if caller %}
+        <div class="modal-footer">
+            {{ caller() }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endmacro %}

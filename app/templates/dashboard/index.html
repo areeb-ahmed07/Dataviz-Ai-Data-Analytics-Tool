@@ -1,0 +1,233 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'dashboard' %}
+
+{% block title %}Dashboard — DataViz Pro{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">
+            {% if current_hour < 12 %}Good morning{% elif current_hour < 17 %}Good afternoon{% else %}Good evening{% endif %},
+            {{ session.get('full_name', 'User') }}
+        </h1>
+        <p class="dash-page-subtitle">Turn your data into actionable insights with AI.</p>
+    </div>
+    <a href="{{ url_for('datasets.upload_page') }}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+        Upload Dataset
+    </a>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    {% with icon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>',
+           label='Datasets', value=dataset_count, sub=('Total files uploaded' if dataset_count > 0 else 'No datasets yet'), color='var(--kpi-blue)' %}
+    {% include "components/stat_card.html" %}
+    {% endwith %}
+
+    {% with icon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>',
+           label='Analyses', value=total_analyses, sub=('Runs completed' if total_analyses > 0 else 'No analyses yet'), color='var(--kpi-green)' %}
+    {% include "components/stat_card.html" %}
+    {% endwith %}
+
+    {% with icon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+           label='Reports', value=total_reports, sub=('Generated documents' if total_reports > 0 else 'No reports yet'), color='var(--kpi-amber)' %}
+    {% include "components/stat_card.html" %}
+    {% endwith %}
+
+    {% if system_stats %}
+    {% with icon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+           label='System Users', value=system_stats.total_users, sub='Active accounts', color='var(--kpi-purple)' %}
+    {% include "components/stat_card.html" %}
+    {% endwith %}
+    {% else %}
+    {% with icon='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 6"/><path d="M22 2 16 8"/><path d="M16 2h6v6"/><rect width="14" height="14" x="3" y="9" rx="2"/></svg>',
+           label='Projects', value=projects|length, sub='Saved projects', color='var(--kpi-purple)' %}
+    {% include "components/stat_card.html" %}
+    {% endwith %}
+    {% endif %}
+</div>
+
+<!-- Two-column layout -->
+<div class="dash-two-col">
+    <!-- Data Overview (large panel) -->
+    <div class="dash-panel dash-panel-main">
+        <h2 class="panel-title">Dataset Statistics</h2>
+        {% if dataset_count > 0 %}
+        <div class="dataset-stats-row">
+            <div class="ds-stat-block">
+                <span class="ds-stat-label">Total Rows</span>
+                <span class="ds-stat-value">{{ "{:,.0f}".format(total_rows) }}</span>
+            </div>
+            <div class="ds-stat-block">
+                <span class="ds-stat-label">Total Columns</span>
+                <span class="ds-stat-value">{{ "{:,.0f}".format(total_cols) }}</span>
+            </div>
+            <div class="ds-stat-block">
+                <span class="ds-stat-label">Total Size</span>
+                <span class="ds-stat-value">{{ "{:.2f} MB".format(total_size_mb) }}</span>
+            </div>
+        </div>
+        <div>
+            <h3 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem;">Datasets by Format</h3>
+            {% if formats_chart_data.labels|length == 1 %}
+            <p><strong>{{ formats_chart_data.labels[0]|upper }}</strong>:
+                {{ formats_chart_data.data[0] }} {{ 'dataset' if formats_chart_data.data[0] == 1 else 'datasets' }} (100%)</p>
+            {% else %}
+            <canvas id="formatsChart" style="max-height: 250px;"></canvas>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            </div>
+            <h3>No dataset uploaded</h3>
+            <p>Upload a dataset to see statistics and start exploring your data.</p>
+            <a href="{{ url_for('datasets.upload_page') }}" class="btn btn-primary btn-sm">Upload Dataset</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right column -->
+    <div class="dash-right-col">
+        <!-- Recent Activity Timeline -->
+        <div class="dash-panel activity-panel" style="flex: 1; overflow-y: auto; max-height: 400px;"
+             role="region" aria-labelledby="recent-activity-title" tabindex="0">
+            <h2 class="panel-title" id="recent-activity-title">Recent Activity</h2>
+            {% if recent_activity %}
+            <div class="activity-timeline">
+                {% for item in recent_activity %}
+                <div class="activity-item">
+                    <svg class="activity-icon" width="18" height="18"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         aria-hidden="true" focusable="false">
+                        {% if item.type == 'dataset' %}
+                        <path d="M12 16V3m-5 5 5-5 5 5"/>
+                        <path d="M4 16v5h16v-5"/>
+                        {% elif item.type == 'report' %}
+                        <path d="M14 2H6v20h12V6zM14 2v4h4M9 12h6M9 16h6"/>
+                        {% elif item.type == 'project' %}
+                        <path d="M3 7V4h6l2 3h10v13H3z"/>
+                        {% elif item.type == 'analysis' %}
+                        <path d="M3 3v18h18M7 16v-4m5 4V7m5 9v-6"/>
+                        {% else %}
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5l3 2"/>
+                        {% endif %}
+                    </svg>
+                    <div class="activity-body">
+                        <p class="activity-title">{{ item.title }}</p>
+                        <p class="activity-date">{{ item.date.strftime('%b %d, %Y %I:%M %p') }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state compact">
+                <div class="empty-state-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/></svg>
+                </div>
+                <p>No recent activity found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Recent Reports -->
+<div class="dash-panel dash-panel-full">
+    <div class="panel-header-row">
+        <h2 class="panel-title">Recent Reports</h2>
+        <a href="{{ url_for('reports.index') }}" class="panel-link">View All →</a>
+    </div>
+    {% if recent_reports %}
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Report Name</th>
+                    <th>Format</th>
+                    <th>Generated On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in recent_reports %}
+                <tr>
+                    <td class="td-name report-filename">{{ report.name }}</td>
+                    <td>
+                        {% if report.name.endswith('.pdf') %}<span class="tag tag-danger">PDF</span>
+                        {% elif report.name.endswith('.md') %}<span class="tag">Markdown</span>
+                        {% else %}<span class="tag tag-primary">{{ report.name.rsplit('.', 1)[-1] | upper }}</span>{% endif %}
+                    </td>
+                    <td>{{ report.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>
+                        {% with report_filename=report.name, report_return_to='dashboard' %}{% include 'components/report_actions.html' %}{% endwith %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state compact">
+        <div class="empty-state-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>No reports generated</h3>
+        <p>Go to the Reports section to generate AI-driven executive reports.</p>
+        <a href="{{ url_for('reports.index') }}" class="btn btn-primary btn-sm">Go to Reports</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if formats_chart_data and formats_chart_data.data|length > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('formatsChart');
+        if (ctx) {
+            const data = {
+                labels: {{ formats_chart_data.labels | tojson }},
+                datasets: [{
+                    data: {{ formats_chart_data.data | tojson }},
+                    backgroundColor: document.documentElement.dataset.theme === 'dark'
+                        ? ['#2dd4bf', '#4ade80', '#a78bfa', '#fbbf24', '#fb7185', '#67e8f9']
+                        : ['#3B82F6', '#22C55E', '#8B5CF6', '#F59E0B', '#EF4444', '#14B8A6'],
+                    borderWidth: 0,
+                    borderRadius: 4,
+                    spacing: 2
+                }]
+            };
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 16,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                color: document.documentElement.dataset.theme === 'dark' ? '#d8e7ed' : '#475569',
+                                font: { family: "'Inter', sans-serif", size: 12, weight: '500' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

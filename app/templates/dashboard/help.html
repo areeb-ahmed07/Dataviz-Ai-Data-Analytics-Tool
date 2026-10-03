@@ -1,0 +1,12 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'help' %}
+{% block title %}Help Center — DataViz Pro{% endblock %}
+{% block content %}
+<div class="dash-page-header"><div><h1 class="dash-page-title">Help Center</h1><p class="dash-page-subtitle">Guidance for getting the most from DataViz Pro.</p></div></div>
+<div class="help-grid">
+    <section class="dash-panel help-hero"><div class="help-icon">?</div><div><h2 class="panel-title">How can we help?</h2><p>Upload a dataset, choose an analysis workspace, and let DataViz Pro turn your data into clear insights and reports.</p></div></section>
+    <section class="dash-panel help-card"><h3>Start with a dataset</h3><p>Upload CSV, Excel, JSON, or Parquet files from the Datasets area. Use the dataset workspace to inspect quality before analysis.</p><a class="btn btn-secondary" href="{{ url_for('datasets.upload_page') }}">Upload data</a></section>
+    <section class="dash-panel help-card"><h3>Choose an analysis</h3><p>Use Analysis for statistics, Visualization for charts, AutoML for models, and Time Series for date-based forecasting.</p><a class="btn btn-secondary" href="{{ url_for('analysis.index') }}">Explore analysis</a></section>
+    <section class="dash-panel help-card"><h3>Generate reports</h3><p>Open Reporting to create polished PDF, Excel, Word, PowerPoint, HTML, or Markdown reports from your analysis.</p><a class="btn btn-secondary" href="{{ url_for('reports.index') }}">Open reports</a></section>
+</div>
+{% endblock %}

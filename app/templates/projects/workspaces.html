@@ -1,0 +1,13 @@
+{% extends 'layouts/dashboard.html' %}
+{% block title %}Saved workspaces — DataViz Pro{% endblock %}
+{% block content %}
+<div class="dash-page-header"><div><h1>Saved workspaces</h1><p>Reopen your dataset, ML settings, and saved charts.</p></div><a class="btn btn-primary" href="/ml">Create in ML Studio</a></div>
+<p>Workspaces use the saved dataset version. Save cleaning changes as a dataset version before configuring ML. Prepared data and trained results are recalculated when you resume.</p>
+{% for workspace in workspaces %}
+<section class="dash-panel" style="padding:1.5rem;margin-bottom:1rem">
+    <h2><a href="/workspaces/{{ workspace.id }}">{{ workspace.name }}</a></h2><p>Saved {{ workspace.created_at.strftime('%b %d, %Y') }}</p>
+    <a class="btn btn-primary" href="/datasets/{{ workspace.dataset_id }}/ml?workspace={{ workspace.id }}">Resume workspace</a>
+    <a class="btn btn-secondary" href="/datasets/{{ workspace.dataset_id }}/clean">Open cleaning</a>
+</section>
+{% else %}<p>No saved workspaces yet. Choose a dataset in ML Studio, configure it, and select Save workspace.</p>{% endfor %}
+{% endblock %}

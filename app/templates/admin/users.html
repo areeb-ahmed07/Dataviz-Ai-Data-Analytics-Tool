@@ -1,0 +1,67 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'settings' %}
+
+{% block title %}User Management — DataViz Pro{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">User Management</h1>
+        <p class="dash-page-subtitle">Manage users, roles, and account status.</p>
+    </div>
+</div>
+
+{% if users %}
+<div class="table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td class="td-name">{{ user.full_name }}</td>
+                <td>{{ user.username }}</td>
+                <td>
+                    <span class="tag tag-primary">{{ user.role }}</span>
+                </td>
+                <td>
+                    {% if user.is_active %}
+                    <span class="tag tag-success">Active</span>
+                    {% else %}
+                    <span class="tag tag-danger">Disabled</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                <td>
+                                <form method="POST" action="{{ url_for('admin.toggle_status', target_user_id=user.id) }}" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if user.is_active %}
+                        <button type="submit" class="btn btn-outline-danger btn-xs">Disable</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-outline-primary btn-xs">Enable</button>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <h3>No users found</h3>
+    <p>No user accounts have been created yet.</p>
+</div>
+{% endif %}
+{% endblock %}

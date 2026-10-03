@@ -1,0 +1,66 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container %}
+
+{% block title %}Correlations — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'correlations') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- Correlation Heatmap -->
+    <div class="dash-panel dash-panel-full">
+        <div class="panel-title-row">
+            <h2 class="panel-title">Correlation Heatmap (Pearson)</h2>
+            <span class="panel-badge" id="corrMethodBadge">Pearson</span>
+        </div>
+        <div id="heatmapContainer" class="heatmap-container">
+            <p class="text-muted">Loading heatmap...</p>
+        </div>
+        <div id="noCorrelationMsg" style="display:none;" class="text-muted">
+            Not enough numeric columns for correlation analysis (minimum 2 required).
+        </div>
+    </div>
+
+    <!-- Strong Correlations -->
+    <div class="dash-panel dash-panel-full" id="strongCorrPanel" style="display:none;">
+        <div class="panel-title-row">
+            <h2 class="panel-title">Strong Correlations (|r| &ge; 0.6)</h2>
+            <span class="panel-badge" id="strongCorrBadge">0 pairs</span>
+        </div>
+        <table class="stats-table" id="strongCorrTable">
+            <thead>
+                <tr>
+                    <th>Variable 1</th>
+                    <th>Variable 2</th>
+                    <th>Pearson r</th>
+                    <th>Spearman &rho;</th>
+                    <th>Strength</th>
+                </tr>
+            </thead>
+            <tbody id="strongCorrBody"></tbody>
+        </table>
+        <div id="noStrongCorrMsg" style="display:none;" class="text-muted">
+            No strong correlations found (|r| &ge; 0.6).
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.loadCorrelations("{{ dataset.id }}");
+</script>
+{% endblock %}

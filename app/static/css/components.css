@@ -1,0 +1,572 @@
+/* ============================================================
+   DataViz Pro — Reusable Components (Phase 15)
+
+   Flash messages, toast notifications, modals, loading states,
+   skeletons, progress bars, and utility components.
+   ============================================================ */
+
+/* ── Flash Messages (Dashboard) ──────────────────────────────── */
+.flash-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.flash-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    animation: flashSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid transparent;
+    box-shadow: var(--shadow-sm);
+}
+
+@keyframes flashSlideIn {
+    from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.flash-item-success {
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
+    border-color: #BBF7D0;
+}
+.flash-item-success .flash-icon-wrap { color: var(--color-success); }
+
+.flash-item-error {
+    background: var(--color-danger-light);
+    color: var(--color-danger-dark);
+    border-color: #FECACA;
+}
+.flash-item-error .flash-icon-wrap { color: var(--color-danger); }
+
+.flash-item-warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+    border-color: #FDE68A;
+}
+.flash-item-warning .flash-icon-wrap { color: var(--color-warning); }
+
+.flash-item-info {
+    background: var(--color-info-light);
+    color: var(--color-info-dark);
+    border-color: #BFDBFE;
+}
+.flash-item-info .flash-icon-wrap { color: var(--color-info); }
+
+.flash-icon-wrap {
+    flex-shrink: 0;
+    display: flex;
+}
+
+.flash-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.flash-dismiss {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    padding: 0.15rem 0.25rem;
+    font-size: 1.15rem;
+    line-height: 1;
+    border-radius: 2px;
+    transition: opacity var(--transition-fast);
+}
+
+.flash-dismiss:hover {
+    opacity: 1;
+}
+
+/* ── Toast Notifications ─────────────────────────────────────── */
+.toast-container {
+    position: fixed;
+    top: calc(var(--topbar-height, 60px) + 1rem);
+    right: 1.25rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+    max-width: 380px;
+    width: 100%;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+    animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    animation: toastProgress linear forwards;
+}
+
+@keyframes toastProgress {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    margin-top: 0.05rem;
+}
+
+.toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-title {
+    font-weight: 700;
+    font-size: 0.8125rem;
+    margin-bottom: 0.1rem;
+}
+
+.toast-message {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    padding: 0.15rem;
+    font-size: 1rem;
+    line-height: 1;
+    border-radius: 2px;
+    transition: opacity var(--transition-fast);
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+.toast-success {
+    background: #FFFFFF;
+    color: var(--color-success-dark);
+    border-color: #BBF7D0;
+}
+.toast-success .toast-icon { color: var(--color-success); }
+.toast-success .toast-progress { background: var(--color-success); }
+
+.toast-error {
+    background: #FFFFFF;
+    color: var(--color-danger-dark);
+    border-color: #FECACA;
+}
+.toast-error .toast-icon { color: var(--color-danger); }
+.toast-error .toast-progress { background: var(--color-danger); }
+
+.toast-warning {
+    background: #FFFFFF;
+    color: var(--color-warning-dark);
+    border-color: #FDE68A;
+}
+.toast-warning .toast-icon { color: var(--color-warning); }
+.toast-warning .toast-progress { background: var(--color-warning); }
+
+.toast-info {
+    background: #FFFFFF;
+    color: var(--color-info-dark);
+    border-color: #BFDBFE;
+}
+.toast-info .toast-icon { color: var(--color-info); }
+.toast-info .toast-progress { background: var(--color-info); }
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%) scale(0.9);
+    }
+}
+
+.toast.removing {
+    animation: toastOut 0.25s ease-in forwards;
+}
+
+/* ── Modal ───────────────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+    padding: 1rem;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-panel {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal-panel {
+    transform: scale(1) translateY(0);
+}
+
+.modal-sm { max-width: 380px; }
+.modal-lg { max-width: 600px; }
+.modal-xl { max-width: 780px; }
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.15rem 1.5rem;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 1.4rem;
+    line-height: 1;
+    padding: 0.15rem 0.35rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.modal-close-btn:hover {
+    color: var(--color-text);
+    background: var(--color-bg-alt);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-alt);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+/* ── Loading Spinner ─────────────────────────────────────────── */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+.loading-spinner-sm {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+}
+
+.loading-spinner-lg {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+}
+
+.loading-spinner-xl {
+    width: 44px;
+    height: 44px;
+    border-width: 4px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Loading State (page-level) ──────────────────────────────── */
+.loading-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1rem;
+    color: var(--color-text-muted);
+}
+
+.loading-page-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* ── Skeleton Loading ────────────────────────────────────────── */
+.loading-skeleton {
+    background: linear-gradient(90deg, var(--color-bg-alt) 25%, var(--color-border) 50%, var(--color-bg-alt) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+    height: 80px;
+    width: 100%;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+    height: 14px;
+    width: 60%;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text-short {
+    height: 14px;
+    width: 30%;
+}
+
+.skeleton-text-lg {
+    height: 20px;
+    width: 40%;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-table-row {
+    height: 44px;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+/* ── Loading Overlay ────────────────────────────────────────── */
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(2px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: inherit;
+    gap: 0.5rem;
+}
+
+.loading-overlay-text {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+}
+
+/* ── Progress Bar ────────────────────────────────────────────── */
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--color-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--color-primary);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-bar-fill.progress-success { background: var(--color-success); }
+.progress-bar-fill.progress-warning { background: var(--color-warning); }
+.progress-bar-fill.progress-danger { background: var(--color-danger); }
+
+.progress-bar-lg { height: 8px; border-radius: 4px; }
+.progress-bar-lg .progress-bar-fill { border-radius: 4px; }
+
+/* ── Tooltip (CSS-only) ──────────────────────────────────────── */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    color: #fff;
+    background: var(--color-text);
+    border-radius: var(--radius-xs);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all var(--transition-fast);
+    z-index: 400;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ── Divider ─────────────────────────────────────────────────── */
+.divider {
+    height: 1px;
+    background: var(--color-border-light);
+    margin: 1rem 0;
+}
+
+/* ── Tag / Chip ──────────────────────────────────────────────── */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: var(--radius-xs);
+    background: var(--color-bg-alt);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+}
+
+.tag-primary { background: var(--color-primary-light); color: var(--color-primary); border-color: transparent; }
+.tag-success { background: var(--color-success-light); color: var(--color-success-dark); border-color: transparent; }
+.tag-warning { background: var(--color-warning-light); color: var(--color-warning-dark); border-color: transparent; }
+.tag-danger  { background: var(--color-danger-light);  color: var(--color-danger-dark);  border-color: transparent; }
+
+/* ── Dropdown Menu (generic) ─────────────────────────────────── */
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    min-width: 180px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.35rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px) scale(0.98);
+    transition: all var(--transition-base);
+    z-index: 300;
+}
+
+.dropdown-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+ border-radius: var(--radius-xs);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+}
+
+.dropdown-item-danger {
+    color: var(--color-danger);
+}
+
+.dropdown-item-danger:hover {
+    background: var(--color-danger-light);
+    color: var(--color-danger);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--color-border-light);
+    margin: 0.25rem 0;
+}

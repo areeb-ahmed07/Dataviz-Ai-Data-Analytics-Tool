@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — DataViz Pro{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{ (session.get('full_name', 'U') | first) | upper }}
+        </div>
+        <div>
+            <h1 class="profile-name">{{ session.get('full_name', 'User') }}</h1>
+            <p class="profile-role">@{{ session.get('username', 'user') }}</p>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="auth-flash">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="profile-grid">
+        <!-- Profile Details Card -->
+        <div class="dash-card">
+            <h2 class="card-title">Profile Details</h2>
+
+            <form method="POST" action="{{ url_for('auth.profile') }}" class="auth-form profile-form" id="profileForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label for="p_full_name">Full Name</label>
+                    <input
+                        type="text"
+                        id="p_full_name"
+                        name="full_name"
+                        value="{{ user.full_name if user else '' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="p_email">Email</label>
+                    <input
+                        type="email"
+                        id="p_email"
+                        name="email"
+                        value="{{ user.email if user else '' }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input
+                        type="text"
+                        value="@{{ user.username if user else '' }}"
+                        disabled
+                        class="input-disabled"
+                    >
+                    <small class="form-hint">Username cannot be changed.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Account Created</label>
+                    <input
+                        type="text"
+                        value="{{ user.created_at.strftime('%B %d, %Y') if user and user.created_at else '—' }}"
+                        disabled
+                        class="input-disabled"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Role</label>
+                    <input
+                        type="text"
+                        value="{{ user.role.value if user and user.role and user.role.value else (user.role | capitalize if user else '—') }}"
+                        disabled
+                        class="input-disabled"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="profileBtn">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="btn-loading" style="display:none">
+                        <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                        Saving...
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Account Security Card -->
+        <div class="dash-card">
+            <h2 class="card-title">Account Security</h2>
+            <p class="card-description">
+                Your password is securely hashed with bcrypt and never stored in plaintext.
+            </p>
+            <div class="security-info">
+                <div class="security-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success, #22C55E)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Password hashed with bcrypt</span>
+                </div>
+                <div class="security-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success, #22C55E)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Session-based authentication</span>
+                </div>
+                <div class="security-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success, #22C55E)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                        <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                    <span>Input sanitized against XSS</span>
+                </div>
+            </div>
+            <p class="card-note">Password change functionality will be available in a future update.</p>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
+            &larr; Back to Dashboard
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-logout">
+            Sign Out
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

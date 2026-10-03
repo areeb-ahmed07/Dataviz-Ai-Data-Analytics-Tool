@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}DataViz Pro — AI-Powered Data Analytics{% endblock %}
+
+{% block body %}
+<nav class="navbar">
+    <div class="navbar-brand">
+        <a href="/">
+            <img src="{{ url_for('static', filename='img/dataviz-logo.png', v='home-logo-1') }}" alt="DataViz Pro" class="navbar-brand-image">
+            DataViz Pro
+        </a>
+    </div>
+    <div class="navbar-links">
+        <button type="button" class="topbar-icon-btn theme-toggle theme-switch landing-theme-toggle" id="themeToggle"
+                role="switch" aria-checked="false" aria-label="Dark mode" title="Switch to dark mode">
+            <span class="theme-switch-thumb" aria-hidden="true"></span>
+            <svg class="theme-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+            <svg class="theme-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M21 13A9 9 0 0 1 11 3a9 9 0 1 0 10 10Z"/></svg>
+        </button>
+        {% if session.get('authenticated') %}
+            <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-logout">Logout</a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}">Sign In</a>
+            <a href="{{ url_for('auth.signup') }}" class="nav-signup">Get Started</a>
+        {% endif %}
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-logo" aria-label="DataViz Pro Logo">
+            <img src="{{ url_for('static', filename='img/dataviz-logo.png', v='home-logo-1') }}" alt="DataViz Pro logo" class="hero-brand-image">
+        </div>
+
+        <h1 class="hero-title">DataViz Pro</h1>
+        <p class="hero-subtitle">AI-Powered Data Analytics Platform</p>
+        <p class="hero-description">
+            Automate data analysis, uncover hidden trends, detect anomalies,
+            generate executive reports, and build predictive models — all
+            powered by artificial intelligence.
+        </p>
+
+        <div class="hero-actions">
+            {% if session.get('authenticated') %}
+                <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary btn-lg">
+                    Go to Dashboard
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg">
+                    Get Started Free
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">
+                    Sign In
+                </a>
+            {% endif %}
+        </div>
+
+        <p class="hero-note">
+            {% if session.get('authenticated') %}
+                Welcome back, {{ session.get('full_name', 'User') }}!
+            {% else %}
+                No credit card required. Start analyzing data in seconds.
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<section class="features">
+    <h2 class="section-title">Everything you need to analyze data</h2>
+    <p class="section-subtitle">From upload to insight, our AI handles the heavy lifting so you can focus on decisions.</p>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+            <h3>Automated Analysis</h3>
+            <p>Upload a dataset and get instant statistical summaries, correlations, distributions, and quality reports.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background: var(--color-success-light); color: var(--color-success);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
+            </div>
+            <h3>Data Cleaning</h3>
+            <p>Handle missing values, remove duplicates, detect outliers, encode categories, and scale features with one click.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background: #EDE9FE; color: #7C3AED;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </div>
+            <h3>AutoML</h3>
+            <p>Automated model selection, hyperparameter tuning, cross-validation, and model comparison with leaderboards.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background: #FEF3C7; color: #D97706;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+            </div>
+            <h3>AI Insights</h3>
+            <p>Trend detection, anomaly identification, root-cause analysis, and AI-generated business recommendations.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background: #FCE7F3; color: #DB2777;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+            </div>
+            <h3>Executive Reports</h3>
+            <p>Generate professional PDF, Word, Excel, and PowerPoint reports from your analysis with one click.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon" style="background: #DBEAFE; color: #2563EB;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3>Explainable AI</h3>
+            <p>Understand model decisions with SHAP values, feature importance plots, and intuitive explanations.</p>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+  <p>&copy; {{ current_year|default(2026) }} DataViz Pro. AI-Powered Data Analytics.</p>
+</footer>
+{% endblock %}

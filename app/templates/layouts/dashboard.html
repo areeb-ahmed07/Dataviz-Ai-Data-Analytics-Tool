@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css', v='20260915-logo2') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report-actions.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="dash-layout" id="dashLayout">
+    {% include "components/sidebar.html" %}
+
+    <div class="dash-main">
+        {% include "components/navbar.html" %}
+
+        <main class="dash-content">
+            {% include "components/flash_messages.html" %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+</div>
+
+<!-- Reusable Modal -->
+{% include "components/modal.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/report-actions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

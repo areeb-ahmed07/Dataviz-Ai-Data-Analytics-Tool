@@ -1,0 +1,76 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'cleaning' %}
+
+{% block title %}Data Cleaning — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datasets.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cleaning.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Data Cleaning Studio</h1>
+        <p class="dash-page-subtitle">Select a dataset to clean and prepare for analysis.</p>
+    </div>
+</div>
+
+{% if datasets %}
+<!-- Dataset Selector Grid -->
+<div class="analysis-dataset-grid">
+    {% for ds in datasets %}
+    <a href="{{ url_for('cleaning.studio', dataset_id=ds.id) }}" class="analysis-dataset-card">
+        <div class="adc-header">
+            <div class="adc-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+            </div>
+            <div class="adc-info">
+                <h3 class="adc-name">{{ ds.name }}</h3>
+                <span class="adc-format format-badge format-badge-{{ ds.file_format }}">{{ ds.file_format|upper }}</span>
+            </div>
+        </div>
+        <div class="adc-stats">
+            <div class="adc-stat">
+                <span class="adc-stat-value">{{ '{:,.0f}'.format(ds.row_count) if ds.row_count else 0 }}</span>
+                <span class="adc-stat-label">Rows</span>
+            </div>
+            <div class="adc-stat">
+                <span class="adc-stat-value">{{ ds.column_count if ds.column_count else 0 }}</span>
+                <span class="adc-stat-label">Columns</span>
+            </div>
+            <div class="adc-stat">
+                <span class="adc-stat-value">{{ (ds.file_size / (1024*1024)) | round(2) if ds.file_size else 0 }}</span>
+                <span class="adc-stat-label">MB</span>
+            </div>
+        </div>
+        <div class="adc-footer">
+            <span class="adc-date">{{ ds.created_at.strftime('%b %d, %Y') if ds.created_at else '—' }}</span>
+            <span class="adc-action">Clean Data &rarr;</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="empty-state">
+    <div class="empty-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+    </div>
+    <h2 class="empty-title">No Datasets Available</h2>
+    <p class="empty-text">Upload a dataset first to start cleaning your data.</p>
+    <a href="{{ url_for('datasets.upload_page') }}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+        Upload Dataset
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

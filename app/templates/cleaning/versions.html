@@ -1,0 +1,87 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'cleaning' %}
+
+{% block title %}Dataset Versions — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cleaning.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="clean-header">
+    <div class="clean-header-left">
+        <div class="detail-breadcrumb">
+            <a href="{{ url_for('datasets.index') }}">Datasets</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{{ url_for('datasets.detail', dataset_id=dataset.id) }}">{{ dataset.name }}</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>Versions</span>
+        </div>
+        <h1 class="dash-page-title">Dataset Versions</h1>
+    </div>
+    <div class="clean-header-actions">
+        <a href="{{ url_for('cleaning.studio', dataset_id=dataset.id) }}" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/></svg>
+            Open Cleaning Studio
+        </a>
+    </div>
+</div>
+
+<div class="dash-panel" style="margin-top:1.5rem;">
+    <h2 class="panel-title">Version History</h2>
+    <div id="versionsList" class="versions-list">
+        <div class="empty-state compact">
+            <p>Loading versions...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    const DATASET_ID = {{ dataset.id }};
+
+    async function loadVersions() {
+        try {
+            const resp = await fetch(`/api/datasets/${DATASET_ID}/clean/versions`);
+            const data = await resp.json();
+            const container = document.getElementById('versionsList');
+            if (!data || data.error) {
+                container.innerHTML = '<div class="empty-state compact"><p>No versions found.</p></div>';
+                return;
+            }
+            let html = '';
+            for (const v of data) {
+                let badge = '';
+                if (v.is_parent) badge = '<span class="version-badge version-parent">Original</span>';
+                else if (v.is_current) badge = '<span class="version-badge version-current">Current</span>';
+                else if (v.is_child) badge = '<span class="version-badge version-child">Cleaned</span>';
+
+                html += `
+                <div class="version-item">
+                    <div class="version-info">
+                        <span class="version-name">${v.name}</span>
+                        ${badge}
+                        <span class="version-meta">${v.row_count || '—'} rows &bull; ${v.column_count || '—'} columns</span>
+                        ${v.operations_count ? `<span class="version-meta">${v.operations_count} operation(s)</span>` : ''}
+                        ${v.created_at ? `<span class="version-date">${new Date(v.created_at).toLocaleString()}</span>` : ''}
+                    </div>
+                    <div class="version-actions">
+                        <a href="/datasets/${v.id}" class="btn btn-secondary btn-sm">View</a>
+                        <a href="/datasets/${v.id}/clean" class="btn btn-secondary btn-sm">Clean</a>
+                        <a href="/analysis/${v.id}/overview" class="btn btn-secondary btn-sm">Analyze</a>
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = html || '<div class="empty-state compact"><p>No versions found.</p></div>';
+        } catch (e) {
+            document.getElementById('versionsList').innerHTML = '<div class="empty-state compact"><p>Failed to load versions.</p></div>';
+        }
+    }
+
+    loadVersions();
+</script>
+{% endblock %}

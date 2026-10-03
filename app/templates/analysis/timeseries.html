@@ -1,0 +1,85 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container %}
+
+{% block title %}Time Series — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'timeseries') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+    
+    <!-- Column Selector -->
+    <div class="dash-panel dash-panel-full">
+        <div class="column-selector-row" style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+            <label class="selector-label">Date Column:</label>
+            <select id="tsDateSelect" class="column-select" style="min-width: 200px;">
+                <option value="">Loading...</option>
+            </select>
+            
+            <label class="selector-label">Value Column:</label>
+            <select id="tsValueSelect" class="column-select" style="min-width: 200px;">
+                <option value="">Loading...</option>
+            </select>
+            
+            <button class="btn btn-primary btn-sm" id="loadTsBtn" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                Analyze Time Series
+            </button>
+        </div>
+    </div>
+
+    <!-- Original Series & Stationarity -->
+    <div class="analysis-two-col" id="tsOriginalContainer" style="display:none; margin-bottom: 20px;">
+        <div class="dash-panel" style="flex: 2;">
+            <h2 class="panel-title">Time Series Overview</h2>
+            <div id="tsOriginalChart" class="plotly-chart" style="height: 350px;"></div>
+        </div>
+        <div class="dash-panel" style="flex: 1;">
+            <h2 class="panel-title">Stationarity Test (ADF)</h2>
+            <div id="tsStationarityContent"></div>
+            
+            <h2 class="panel-title" style="margin-top:20px;">Anomalies</h2>
+            <div id="tsAnomaliesContent"></div>
+        </div>
+    </div>
+
+    <!-- Seasonality -->
+    <div class="dash-panel dash-panel-full" id="tsSeasonalityContainer" style="display:none; margin-bottom: 20px;">
+        <h2 class="panel-title">Seasonal Decomposition</h2>
+        <div id="tsSeasonalityContent" style="display:none;" class="empty-state compact">
+            <p>Could not detect seasonality or insufficient data.</p>
+        </div>
+        <div id="tsSeasonalityCharts" style="display:none;">
+            <div id="tsTrendChart" class="plotly-chart" style="height: 250px;"></div>
+            <div id="tsSeasonalChart" class="plotly-chart" style="height: 250px;"></div>
+            <div id="tsResidualChart" class="plotly-chart" style="height: 250px;"></div>
+        </div>
+    </div>
+
+    <!-- Forecast -->
+    <div class="dash-panel dash-panel-full" id="tsForecastContainer" style="display:none;">
+        <h2 class="panel-title">Forecast (Prophet)</h2>
+        <div id="tsForecastError" style="display:none;" class="empty-state compact"></div>
+        <div id="tsForecastChart" class="plotly-chart" style="height: 400px; display:none;"></div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.initTimeseries("{{ dataset.id }}");
+</script>
+{% endblock %}

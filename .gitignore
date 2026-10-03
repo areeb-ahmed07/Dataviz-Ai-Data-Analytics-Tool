@@ -1,0 +1,51 @@
+# Secrets — never commit real credentials
+.env
+.env.local
+auth/.session_key
+config.local.py
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Local databases (runtime state, not source)
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Framework secrets
+.streamlit/secrets.toml
+
+# Runtime / generated output — regenerate on demand, don't ship in the repo
+analysis_output/
+ml_exports/
+saved_projects/
+temp_data/
+temp_*.csv
+*.tmp
+/uploads/
+/reports/
+trained_models/
+instance/
+logs/
+ml_models_storage/
+/app/static/reports/
+.coverage
+htmlcov/
+*.log
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

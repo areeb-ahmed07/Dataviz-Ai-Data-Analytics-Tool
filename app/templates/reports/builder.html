@@ -1,0 +1,127 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Report Builder - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="rpt-page" data-dataset-id="{{ dataset.id }}">
+    <div class="rpt-page-header">
+        <div class="rpt-page-header-content">
+            <div class="rpt-breadcrumb">
+                <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                <span class="rpt-breadcrumb-sep">/</span>
+                <a href="{{ url_for('reports.index') }}">Reports</a>
+                <span class="rpt-breadcrumb-sep">/</span>
+                <span>{{ dataset.name }}</span>
+            </div>
+            <h1 class="rpt-page-title">Report Builder</h1>
+            <p class="rpt-page-desc">Generate a comprehensive analytics report for <strong>{{ dataset.name }}</strong> using real analysis results.</p>
+        </div>
+        <div class="rpt-page-header-actions">
+            <a href="{{ url_for('reports.index') }}" class="rpt-btn rpt-btn-secondary rpt-btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <div class="rpt-builder-grid">
+        <div class="rpt-builder-main">
+            <!-- Dataset Summary Card -->
+            <div class="rpt-card" id="rptPreviewCard">
+                <div class="rpt-card-header">
+                    <h3>Report Preview</h3>
+                    <button class="rpt-btn rpt-btn-secondary rpt-btn-sm" onclick="ReportBuilder.loadPreview()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh
+                    </button>
+                </div>
+                <div class="rpt-card-body" id="rptPreviewBody">
+                    <div class="rpt-loading"><div class="rpt-spinner"></div><span>Loading analysis data...</span></div>
+                </div>
+            </div>
+
+            <!-- Available Sections -->
+            <div class="rpt-card" id="rptSectionsCard">
+                <div class="rpt-card-header">
+                    <h3>Report Sections</h3>
+                    <span class="rpt-card-subtitle">All available analysis sections</span>
+                </div>
+                <div class="rpt-card-body">
+                    <div class="rpt-sections-grid" id="rptSectionsGrid">
+                        <div class="rpt-loading"><div class="rpt-spinner"></div><span>Loading...</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="rpt-builder-sidebar">
+            <div class="rpt-card">
+                <div class="rpt-card-header">
+                    <h3>Generate Report</h3>
+                </div>
+                <div class="rpt-card-body">
+                    <p class="rpt-sidebar-desc">Select a format and generate a report using real analysis data.</p>
+
+                    <div class="rpt-format-list">
+                        <button class="rpt-format-btn active" data-format="pdf" onclick="ReportBuilder.selectFormat('pdf')">
+                            <span class="rpt-format-icon rpt-icon-pdf"></span>
+                            <div><strong>PDF Report</strong><small>Full analytics document</small></div>
+                        </button>
+                        <button class="rpt-format-btn" data-format="html" onclick="ReportBuilder.selectFormat('html')">
+                            <span class="rpt-format-icon rpt-icon-html"></span>
+                            <div><strong>HTML Report</strong><small>Interactive web report</small></div>
+                        </button>
+                        <button class="rpt-format-btn" data-format="pptx" onclick="ReportBuilder.selectFormat('pptx')">
+                            <span class="rpt-format-icon rpt-icon-pptx"></span>
+                            <div><strong>PowerPoint</strong><small>Executive slide deck</small></div>
+                        </button>
+                        <button class="rpt-format-btn" data-format="excel" onclick="ReportBuilder.selectFormat('excel')">
+                            <span class="rpt-format-icon rpt-icon-excel"></span>
+                            <div><strong>Excel</strong><small>Multi-sheet workbook</small></div>
+                        </button>
+                        <button class="rpt-format-btn" data-format="word" onclick="ReportBuilder.selectFormat('word')">
+                            <span class="rpt-format-icon rpt-icon-word"></span>
+                            <div><strong>Word</strong><small>Formatted document</small></div>
+                        </button>
+                        <button class="rpt-format-btn" data-format="executive" onclick="ReportBuilder.selectFormat('executive')">
+                            <span class="rpt-format-icon rpt-icon-executive"></span>
+                            <div><strong>Executive PDF</strong><small>C-suite summary</small></div>
+                        </button>
+                    </div>
+
+                    <button class="rpt-btn rpt-btn-primary rpt-btn-full" id="rptGenerateBtn" onclick="ReportBuilder.generate()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        Generate & Download
+                    </button>
+                </div>
+            </div>
+
+            <div class="rpt-card" id="rptModelsCard" style="display:none;">
+                <div class="rpt-card-header"><h3>ML Models</h3></div>
+                <div class="rpt-card-body" id="rptModelsBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Progress Overlay -->
+    <div class="rpt-overlay" id="rptOverlay" style="display:none;">
+        <div class="rpt-overlay-content">
+            <div class="rpt-spinner rpt-spinner-lg"></div>
+            <h3>Generating Report...</h3>
+            <p id="rptOverlayMsg">Running analysis and building your report. This may take a moment.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+<script>window.REPORT_CSRF_TOKEN = '{{ csrf_token() }}'; ReportBuilder.init({{ dataset.id }});</script>
+{% endblock %}

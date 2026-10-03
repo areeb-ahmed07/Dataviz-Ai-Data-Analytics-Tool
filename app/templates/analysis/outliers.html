@@ -1,0 +1,76 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container %}
+
+{% block title %}Outliers — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'outliers') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- Summary KPIs -->
+    <div class="kpi-grid" id="outlierKpis">
+        <div class="kpi-card kpi-card-warning">
+            <span class="kpi-value" id="kpiOutlierCols">—</span>
+            <span class="kpi-label">Columns with Outliers</span>
+        </div>
+        <div class="kpi-card kpi-card-warning">
+            <span class="kpi-value" id="kpiTotalOutliers">—</span>
+            <span class="kpi-label">Total Outlier Values</span>
+        </div>
+    </div>
+
+    <!-- Box Plots for columns with outliers -->
+    <div class="dash-panel dash-panel-full" id="outlierBoxPanel" style="display:none;">
+        <h2 class="panel-title">Outlier Box Plots</h2>
+        <div id="outlierBoxPlot" class="plotly-chart plotly-chart-wide"></div>
+    </div>
+
+    <!-- Outlier Details Table -->
+    <div class="dash-panel dash-panel-full" id="outlierTablePanel" style="display:none;">
+        <h2 class="panel-title">Outlier Details by Column (IQR Method)</h2>
+        <div class="stats-table-wrap">
+            <table class="stats-table" id="outlierTable">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Outlier Count</th>
+                        <th>Outlier %</th>
+                        <th>Q1</th>
+                        <th>Q3</th>
+                        <th>IQR</th>
+                        <th>Lower Fence</th>
+                        <th>Upper Fence</th>
+                        <th>Min Outlier</th>
+                        <th>Max Outlier</th>
+                    </tr>
+                </thead>
+                <tbody id="outlierBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- No Outliers Message -->
+    <div id="noOutliersMsg" style="display:none;" class="empty-state compact">
+        <p>No outliers were detected in any numeric column using the IQR method.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.loadOutliers("{{ dataset.id }}");
+</script>
+{% endblock %}

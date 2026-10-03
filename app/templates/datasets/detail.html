@@ -1,0 +1,379 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'datasets' %}
+
+{% block title %}{{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datasets.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="dash-page-header">
+    <div>
+        <div class="detail-breadcrumb">
+            <a href="{{ url_for('datasets.index') }}">Datasets</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>{{ dataset.name }}</span>
+        </div>
+        <h1 class="dash-page-title">{{ dataset.name }}</h1>
+        <div class="detail-meta">
+            <span class="format-badge format-badge-{{ dataset.file_format }}">{{ format_labels.get(dataset.file_format, dataset.file_format|upper) }}</span>
+            <span class="meta-sep">|</span>
+            <span>{{ '{:,.0f}'.format(dataset.row_count) if dataset.row_count else '—' }} rows</span>
+            <span class="meta-sep">|</span>
+            <span>{{ dataset.column_count if dataset.column_count else '—' }} columns</span>
+        </div>
+    </div>
+    <div class="detail-actions">
+        <button class="btn btn-secondary" onclick="openModal('editMetadataModal')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit Metadata
+        </button>
+        <a href="{{ url_for('datasets.preview', dataset_id=dataset.id) }}" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview
+        </a>
+        <a href="{{ url_for('datasets.download', dataset_id=dataset.id) }}" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Download
+        </a>
+        <a href="{{ url_for('cleaning.studio', dataset_id=dataset.id) }}" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/></svg>
+            Clean Dataset
+        </a>
+        <a href="{{ url_for('ml.studio', dataset_id=dataset.id) }}" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            ML Studio
+        </a>
+        <div class="dropdown" style="display:inline-block; position:relative;">
+            <button class="btn btn-primary dropdown-toggle" type="button" onclick="this.nextElementSibling.classList.toggle('show')" style="margin-left: 10px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Generate Report
+            </button>
+            <ul class="dropdown-menu" style="position:absolute; top:100%; right:0; background:white; border:1px solid #ccc; list-style:none; padding:5px 0; min-width:120px; z-index:100; display:none; border-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+                <li>
+                    <form method="POST" action="{{ url_for('reports.download_report', dataset_id=dataset.id, format='pdf') }}" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" style="width:100%;text-align:left;background:none;border:none;padding:8px 15px;cursor:pointer;">PDF</button>
+                    </form>
+                </li>
+                <li>
+                    <form method="POST" action="{{ url_for('reports.download_report', dataset_id=dataset.id, format='word') }}" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" style="width:100%;text-align:left;background:none;border:none;padding:8px 15px;cursor:pointer;">Word</button>
+                    </form>
+                </li>
+                <li>
+                    <form method="POST" action="{{ url_for('reports.download_report', dataset_id=dataset.id, format='excel') }}" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" style="width:100%;text-align:left;background:none;border:none;padding:8px 15px;cursor:pointer;">Excel</button>
+                    </form>
+                </li>
+                <li>
+                    <form method="POST" action="{{ url_for('reports.download_report', dataset_id=dataset.id, format='pptx') }}" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" style="width:100%;text-align:left;background:none;border:none;padding:8px 15px;cursor:pointer;">PowerPoint</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <button class="btn btn-ghost btn-delete-ds" data-id="{{ dataset.id }}" data-name="{{ dataset.name }}" style="color:#DC2626;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            Delete
+        </button>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="detail-tabs">
+    <a href="#" class="detail-tab active" data-tab="overview">Overview</a>
+    <a href="{{ url_for('datasets.preview', dataset_id=dataset.id) }}" class="detail-tab">Preview</a>
+    <a href="#" class="detail-tab" data-tab="quality">Quality</a>
+    <a href="{{ url_for('analysis.overview', dataset_id=dataset.id) }}" class="detail-tab">Analysis</a>
+    <a href="{{ url_for('cleaning.studio', dataset_id=dataset.id) }}" class="detail-tab">Cleaning</a>
+    <a href="#" class="detail-tab" data-tab="history">History</a>
+    {% if dataset.parent_dataset_id %}
+    <a href="{{ url_for('cleaning.versions', dataset_id=dataset.id) }}" class="detail-tab">Versions</a>
+    {% endif %}
+    <a href="{{ url_for('ml.studio', dataset_id=dataset.id) }}" class="detail-tab">ML Studio</a>
+    <a href="{{ url_for('visualization.workspace', dataset_id=dataset.id) }}" class="detail-tab">Visualization</a>
+    <a href="{{ url_for('copilot.workspace', dataset_id=dataset.id) }}" class="detail-tab">AI Insights</a>
+</div>
+
+<!-- Overview Tab Content -->
+<div class="detail-tab-content" id="tab-overview">
+    <!-- Dataset Overview Panel -->
+    <div class="detail-two-col">
+        <div class="dash-panel">
+            <h2 class="panel-title">Dataset Overview</h2>
+            
+            {% if dataset.description %}
+            <div class="dataset-description" style="margin-bottom: 20px; color: var(--color-text); font-size: 0.95rem; line-height: 1.5;">
+                {{ dataset.description }}
+            </div>
+            {% endif %}
+
+            <div class="overview-stats-grid">
+                <div class="ov-stat">
+                    <span class="ov-stat-label">Rows</span>
+                    <span class="ov-stat-value">{{ '{:,.0f}'.format(dataset.row_count) if dataset.row_count else '—' }}</span>
+                </div>
+                <div class="ov-stat">
+                    <span class="ov-stat-label">Columns</span>
+                    <span class="ov-stat-value">{{ dataset.column_count if dataset.column_count else '—' }}</span>
+                </div>
+                <div class="ov-stat">
+                    <span class="ov-stat-label">Format</span>
+                    <span class="ov-stat-value">{{ format_labels.get(dataset.file_format, dataset.file_format|upper) }}</span>
+                </div>
+                <div class="ov-stat">
+                    <span class="ov-stat-label">File Size</span>
+                    <span class="ov-stat-value">{{ (dataset.file_size / (1024*1024)) | round(2) if dataset.file_size else '—' }} MB</span>
+                </div>
+                <div class="ov-stat">
+                    <span class="ov-stat-label">Original Filename</span>
+                    <span class="ov-stat-value">{{ dataset.original_filename }}</span>
+                </div>
+                <div class="ov-stat">
+                    <span class="ov-stat-label">Uploaded</span>
+                    <span class="ov-stat-value">{{ dataset.created_at.strftime('%b %d, %Y %H:%M') if dataset.created_at else '—' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Quality Panel -->
+        {% if dataset.quality_info %}
+        <div class="dash-panel">
+            <h2 class="panel-title">Data Quality</h2>
+            {% if 'quality_score' in dataset.quality_info %}
+            <div class="quality-score-wrap">
+                <div class="quality-score-ring">
+                    <span class="quality-score-value">{{ dataset.quality_info.quality_score | round(1) }}</span>
+                </div>
+                <span class="quality-score-label">Quality Score</span>
+            </div>
+            {% endif %}
+            <div class="quality-metrics-list">
+                <div class="qm-item">
+                    <span class="qm-label">Missing Values</span>
+                    <span class="qm-value">{{ dataset.quality_info.get('missing_values', '—') }}</span>
+                </div>
+                <div class="qm-item">
+                    <span class="qm-label">Missing %</span>
+                    <span class="qm-value">{{ dataset.quality_info.get('missing_pct', '—') }}%</span>
+                </div>
+                <div class="qm-item">
+                    <span class="qm-label">Duplicate Rows</span>
+                    <span class="qm-value">{{ dataset.quality_info.get('duplicate_rows', '—') }}</span>
+                </div>
+                {% if 'anomalies_detected' in dataset.quality_info %}
+                <div class="qm-item">
+                    <span class="qm-label">Anomalies</span>
+                    <span class="qm-value">{{ dataset.quality_info.anomalies_detected }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+    <!-- Columns Panel -->
+    {% if dataset.column_info %}
+    <div class="dash-panel dash-panel-full">
+        <h2 class="panel-title">Columns ({{ dataset.column_info|length }})</h2>
+        <div class="columns-table-wrap">
+            <table class="columns-table">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Missing</th>
+                        <th>Unique</th>
+                        <th>Sample Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for col in dataset.column_info %}
+                    <tr>
+                        <td class="td-name">{{ col.name }}</td>
+                        <td><span class="dtype-badge">{{ col.dtype }}</span></td>
+                        <td>
+                            {% if col.missing_count > 0 %}
+                            <span class="missing-badge">{{ col.missing_count }} ({{ col.missing_pct }}%)</span>
+                            {% else %}
+                            <span class="no-missing">0</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ col.unique_count }}</td>
+                        <td class="td-sample">
+                            {% if col.sample_values %}
+                            {{ col.sample_values | join(', ') }}
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quality Tab Content (hidden) -->
+<div class="detail-tab-content" id="tab-quality" style="display:none;">
+    {% if dataset.quality_info %}
+    <div class="dash-panel">
+        <h2 class="panel-title">Data Quality Report</h2>
+        {% if 'quality_score' in dataset.quality_info %}
+        <div class="quality-score-wrap">
+            <div class="quality-score-ring large">
+                <span class="quality-score-value">{{ dataset.quality_info.quality_score | round(1) }}</span>
+            </div>
+            <span class="quality-score-label">Overall Quality Score</span>
+        </div>
+        {% endif %}
+        <div class="quality-detail-grid">
+            <div class="qd-card">
+                <span class="qd-value">{{ dataset.quality_info.get('missing_values', '—') }}</span>
+                <span class="qd-label">Missing Values</span>
+            </div>
+            <div class="qd-card">
+                <span class="qd-value">{{ dataset.quality_info.get('missing_pct', '—') }}%</span>
+                <span class="qd-label">Missing Percentage</span>
+            </div>
+            <div class="qd-card">
+                <span class="qd-value">{{ dataset.quality_info.get('duplicate_rows', '—') }}</span>
+                <span class="qd-label">Duplicate Rows</span>
+            </div>
+            {% if 'anomalies_detected' in dataset.quality_info %}
+            <div class="qd-card">
+                <span class="qd-value">{{ dataset.quality_info.anomalies_detected }}</span>
+                <span class="qd-label">Anomalies Detected</span>
+            </div>
+            {% endif %}
+        </div>
+        {% if dataset.quality_info.get('consistency_issues') %}
+        <h3 class="panel-title" style="margin-top:1.5rem;">Consistency Issues</h3>
+        {% for issue in dataset.quality_info.consistency_issues %}
+        <div class="consistency-issue">{{ issue }}</div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state compact">
+        <p>Quality information is not available for this dataset.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- History Tab Content (hidden) -->
+<div class="detail-tab-content" id="tab-history" style="display:none;">
+    <div class="dash-panel">
+        <h2 class="panel-title">Dataset History & Versions</h2>
+        
+        <div class="activity-timeline" style="margin-top: 20px;">
+            <div class="timeline-item" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div class="timeline-icon" style="background: var(--color-primary-light); color: var(--color-primary); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                </div>
+                <div class="timeline-content">
+                    <h4 style="margin: 0; font-size: 0.95rem;">Dataset Uploaded</h4>
+                    <p style="margin: 5px 0 0; font-size: 0.85rem; color: var(--color-text-muted);">{{ dataset.created_at.strftime('%b %d, %Y at %H:%M') if dataset.created_at else 'Unknown date' }}</p>
+                </div>
+            </div>
+            
+            {% if versions %}
+            <h3 style="margin: 30px 0 15px; font-size: 1rem; border-top: 1px solid var(--color-border); padding-top: 20px;">Derived Versions</h3>
+            <div class="versions-list" style="display: flex; flex-direction: column; gap: 10px;">
+                {% for version in versions %}
+                <div class="version-card" style="border: 1px solid var(--color-border); border-radius: 6px; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0 0 5px; font-size: 0.95rem;">
+                            <a href="{{ url_for('datasets.detail', dataset_id=version.id) }}" style="color: var(--color-primary); text-decoration: none;">{{ version.name }}</a>
+                        </h4>
+                        <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted);">
+                            Created {{ version.created_at.strftime('%b %d, %Y') }} &bull; {{ '{:,.0f}'.format(version.row_count) if version.row_count else '—' }} rows
+                        </p>
+                    </div>
+                    <a href="{{ url_for('datasets.detail', dataset_id=version.id) }}" class="btn btn-sm btn-secondary">Open</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Metadata Modal -->
+<div class="modal-overlay" id="editMetadataModal" aria-hidden="true">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h2 class="modal-title">Edit Dataset Metadata</h2>
+            <button class="modal-close-btn" onclick="closeModal('editMetadataModal')">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('datasets.edit', dataset_id=dataset.id) }}">
+            <div class="modal-body">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="form-group">
+                    <label for="dataset_name">Dataset Name</label>
+                    <input type="text" id="dataset_name" name="name" class="form-control" value="{{ dataset.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dataset_description">Description (Optional)</label>
+                    <textarea id="dataset_description" name="description" class="form-control" rows="4" placeholder="Add a description to help you remember what this dataset contains...">{{ dataset.description or '' }}</textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editMetadataModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal" aria-hidden="true">
+    <div class="modal-panel modal-sm">
+        <div class="modal-header">
+            <h2 class="modal-title">Delete Dataset?</h2>
+            <button class="modal-close-btn" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>This will permanently remove:</p>
+            <p class="modal-dataset-name" id="deleteDatasetName"></p>
+            <p class="modal-warning-text">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="closeModal('deleteModal')">Cancel</button>
+            <form method="POST" action="{{ url_for('datasets.delete', dataset_id=dataset.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm" style="background:#DC2626;color:#fff;">Delete Dataset</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/datasets.js') }}"></script>
+<script>
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        var dropdowns = document.querySelectorAll('.dropdown-menu.show');
+        dropdowns.forEach(function(menu) {
+            if (!menu.parentElement.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+    });
+</script>
+{% endblock %}

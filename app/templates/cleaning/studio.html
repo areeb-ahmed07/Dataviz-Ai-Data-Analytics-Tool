@@ -1,0 +1,320 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'cleaning' %}
+
+{% block title %}Clean Dataset: {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cleaning.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="clean-header">
+    <div class="clean-header-left">
+        <div class="detail-breadcrumb">
+            <a href="{{ url_for('datasets.index') }}">Datasets</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{{ url_for('datasets.detail', dataset_id=dataset.id) }}">{{ dataset.name }}</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>Cleaning Studio</span>
+        </div>
+        <h1 class="dash-page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
+            Clean Dataset: {{ dataset.name }}
+        </h1>
+        <div class="clean-header-meta">
+            <span class="format-badge format-badge-{{ dataset.file_format }}">{{ format_labels.get(dataset.file_format, dataset.file_format|upper) }}</span>
+            <span id="cleaningDatasetInfo">Loading...</span>
+        </div>
+    </div>
+    <div class="clean-header-actions">
+        <button class="btn btn-secondary" id="btnResetAll" title="Reset all changes">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset
+        </button>
+        <button class="btn btn-primary" id="btnSaveDataset" title="Save as new dataset">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save as New Dataset
+        </button>
+    </div>
+</div>
+
+<!-- Quality Dashboard -->
+<div class="clean-quality-bar" id="qualityBar">
+    <div class="quality-stat" id="qsRows">
+        <span class="qs-label">Rows</span>
+        <span class="qs-value qs-original" id="qsRowsOriginal">—</span>
+        <span class="qs-arrow" id="qsRowsArrow" style="display:none;">→</span>
+        <span class="qs-value qs-current" id="qsRowsCurrent">—</span>
+    </div>
+    <div class="quality-stat" id="qsColumns">
+        <span class="qs-label">Columns</span>
+        <span class="qs-value qs-original" id="qsColumnsOriginal">—</span>
+        <span class="qs-arrow" id="qsColumnsArrow" style="display:none;">→</span>
+        <span class="qs-value qs-current" id="qsColumnsCurrent">—</span>
+    </div>
+    <div class="quality-stat" id="qsMissing">
+        <span class="qs-label">Missing</span>
+        <span class="qs-value qs-original" id="qsMissingOriginal">—</span>
+        <span class="qs-arrow" id="qsMissingArrow" style="display:none;">→</span>
+        <span class="qs-value qs-current" id="qsMissingCurrent">—</span>
+    </div>
+    <div class="quality-stat" id="qsDuplicates">
+        <span class="qs-label">Duplicates</span>
+        <span class="qs-value qs-original" id="qsDuplicatesOriginal">—</span>
+        <span class="qs-arrow" id="qsDuplicatesArrow" style="display:none;">→</span>
+        <span class="qs-value qs-current" id="qsDuplicatesCurrent">—</span>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="clean-layout">
+    <!-- Left Panel: Tools -->
+    <div class="clean-tools-panel">
+        <div class="tools-section" id="toolMissing">
+            <div class="tool-section-header" data-tool="missing">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                <span>Missing Values</span>
+                <span class="tool-badge" id="badgeMissing">0</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyMissing" style="display:none;">
+                <div class="tool-desc">Handle missing values per column using different strategies.</div>
+                <div class="tool-config" id="missingConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CleaningApp.previewMissing()">Preview</button>
+                    <button class="btn btn-sm" onclick="CleaningApp.applyMissing()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolDuplicates">
+            <div class="tool-section-header" data-tool="duplicates">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10v10H7z"/></svg>
+                <span>Duplicates</span>
+                <span class="tool-badge" id="badgeDuplicates">0</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyDuplicates" style="display:none;">
+                <div class="tool-config" id="duplicatesConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CleaningApp.previewDuplicates()">Preview</button>
+                    <button class="btn btn-sm" onclick="CleaningApp.applyDuplicates()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolOutliers">
+            <div class="tool-section-header" data-tool="outliers">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/><line x1="12" x2="12" y1="8" y2="2"/></svg>
+                <span>Outliers</span>
+                <span class="tool-badge" id="badgeOutliers">0</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyOutliers" style="display:none;">
+                <div class="tool-config" id="outliersConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CleaningApp.previewOutliers()">Preview</button>
+                    <button class="btn btn-sm" onclick="CleaningApp.applyOutliers()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolDataTypes">
+            <div class="tool-section-header" data-tool="datatypes">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                <span>Data Types</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyDatatypes" style="display:none;">
+                <div class="tool-config" id="dataTypesConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolColumns">
+            <div class="tool-section-header" data-tool="columns">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/></svg>
+                <span>Column Management</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyColumns" style="display:none;">
+                <div class="tool-config" id="columnsConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolEncoding">
+            <div class="tool-section-header" data-tool="encoding">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                <span>Encoding</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyEncoding" style="display:none;">
+                <div class="tool-config" id="encodingConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CleaningApp.previewEncoding()">Preview</button>
+                    <button class="btn btn-sm" onclick="CleaningApp.applyEncoding()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolScaling">
+            <div class="tool-section-header" data-tool="scaling">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                <span>Scaling / Normalization</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyScaling" style="display:none;">
+                <div class="tool-config" id="scalingConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CleaningApp.previewScaling()">Preview</button>
+                    <button class="btn btn-sm" onclick="CleaningApp.applyScaling()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolTransform">
+            <div class="tool-section-header" data-tool="transform">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Transformations</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyTransform" style="display:none;">
+                <div class="tool-config" id="transformConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-primary btn-sm" onclick="CleaningApp.previewTransform()">Preview</button>
+                    <button class="btn btn-sm" onclick="CleaningApp.applyTransform()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tools-section" id="toolFeatures">
+            <div class="tool-section-header" data-tool="features">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                <span>Feature / Target Selection</span>
+            </div>
+            <div class="tool-section-body" id="toolBodyFeatures" style="display:none;">
+                <div class="tool-config" id="featuresConfig">
+                    <p class="tool-loading">Loading...</p>
+                </div>
+                <div class="tool-actions">
+                    <button class="btn btn-sm" onclick="CleaningApp.applyKeepColumns()">Keep Selected</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Preview & History -->
+    <div class="clean-preview-panel">
+        <!-- Preview Section -->
+        <div class="dash-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Preview
+                </h2>
+                <div class="panel-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="CleaningApp.refreshPreview()">Refresh</button>
+                </div>
+            </div>
+            <div class="preview-content" id="previewContent">
+                <div class="empty-state compact">
+                    <p>Select a cleaning tool to preview changes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Preview Table -->
+        <div class="dash-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                    Data Preview
+                </h2>
+            </div>
+            <div class="data-preview-table-wrap" id="dataPreviewTable">
+                <div class="empty-state compact">
+                    <p>Loading data preview...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operation History -->
+        <div class="dash-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Operation History
+                </h2>
+                <div class="panel-actions">
+                    <button class="btn btn-ghost btn-sm" id="btnUndoLast" onclick="CleaningApp.undoLast()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                        Undo Last
+                    </button>
+                </div>
+            </div>
+            <div class="history-content" id="historyContent">
+                <div class="empty-state compact">
+                    <p>No operations applied yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Modal -->
+<div class="modal-overlay" id="saveModal" aria-hidden="true">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h2 class="modal-title">Save Cleaned Dataset</h2>
+            <button class="modal-close-btn" onclick="closeModal('saveModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="saveSummary"></div>
+            <div class="form-group" style="margin-top:1rem;">
+                <label class="form-label">Dataset Name</label>
+                <input type="text" class="form-input" id="saveDatasetName" placeholder="Enter name for cleaned dataset">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="closeModal('saveModal')">Cancel</button>
+            <button class="btn btn-primary btn-sm" id="btnConfirmSave" onclick="CleaningApp.confirmSave()">Save Dataset</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal" aria-hidden="true">
+    <div class="modal-panel modal-sm">
+        <div class="modal-header">
+            <h2 class="modal-title" id="confirmTitle">Confirm</h2>
+            <button class="modal-close-btn" onclick="closeModal('confirmModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmMessage"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="closeModal('confirmModal')">Cancel</button>
+            <button class="btn btn-primary btn-sm" id="btnConfirmAction">Confirm</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    const DATASET_ID = {{ dataset.id }};
+    const API_BASE = `/api/datasets/${DATASET_ID}/clean`;
+</script>
+<script src="{{ url_for('static', filename='js/cleaning.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Global Explanations — {{ model_name|default('Model') }}{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/xai.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="xai-global-page" data-model-id="{{ model_id }}">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-header-breadcrumb">
+                <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                <span class="breadcrumb-sep">/</span>
+                <a href="{{ url_for('xai.model_selection') }}">Explainable AI</a>
+                <span class="breadcrumb-sep">/</span>
+                <a href="{{ url_for('xai.explain', model_id=model_id) }}" id="xaiBreadcrumbModel">{{ model_name|default('Model') }}</a>
+                <span class="breadcrumb-sep">/</span>
+                <span>Global Explanations</span>
+            </div>
+            <h1 class="page-header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Global Explanations
+            </h1>
+            <p class="page-header-desc">Understand overall feature importance and model behavior across all data</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ url_for('xai.explain', model_id=model_id) }}" class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Workspace
+            </a>
+        </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <div class="xai-controls-bar">
+        <div class="xai-control-group">
+            <label for="xaiGlobalTopN">Top N Features</label>
+            <select id="xaiGlobalTopN" class="xai-select" onchange="XAIGlobal.onConfigChange()">
+                <option value="10" selected>Top 10</option>
+                <option value="15">Top 15</option>
+                <option value="20">Top 20</option>
+                <option value="all">All Features</option>
+            </select>
+        </div>
+        <div class="xai-control-group">
+            <label for="xaiGlobalSampleSize">Sample Size</label>
+            <select id="xaiGlobalSampleSize" class="xai-select" onchange="XAIGlobal.onConfigChange()">
+                <option value="100">100 samples</option>
+                <option value="500" selected>500 samples</option>
+                <option value="1000">1,000 samples</option>
+                <option value="all">All samples</option>
+            </select>
+        </div>
+        <div class="xai-control-group">
+            <label for="xaiGlobalMaxRows">Max Rows for Computation</label>
+            <input type="number" id="xaiGlobalMaxRows" class="xai-input" value="5000" min="100" max="50000" step="100">
+        </div>
+        <button class="btn btn-primary btn-sm" id="xaiGlobalRefreshBtn" onclick="XAIGlobal.refreshAll()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh All
+        </button>
+    </div>
+
+    <!-- Sub-tab Navigation -->
+    <div class="xai-tabs xai-subtabs">
+        <button class="xai-tab active" data-subtab="feature-importance" onclick="XAIGlobal.switchSubTab('feature-importance')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+            Feature Importance
+        </button>
+        <button class="xai-tab" data-subtab="permutation" onclick="XAIGlobal.switchSubTab('permutation')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+            Permutation
+        </button>
+        <button class="xai-tab" data-subtab="shap-summary" onclick="XAIGlobal.switchSubTab('shap-summary')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg>
+            SHAP Summary
+        </button>
+        <button class="xai-tab" data-subtab="shap-dependence" onclick="XAIGlobal.switchSubTab('shap-dependence')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 18 18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            SHAP Dependence
+        </button>
+        <button class="xai-tab" data-subtab="comparison" onclick="XAIGlobal.switchSubTab('comparison')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            Comparison
+        </button>
+    </div>
+
+    <!-- Sub-tab Panels -->
+    <div class="xai-subtab-panels">
+
+        <!-- Feature Importance Panel -->
+        <div class="xai-subtab-panel active" data-subtab="feature-importance">
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>Feature Importance (Native)</h3>
+                    <span class="xai-badge xai-badge-native">Native</span>
+                </div>
+                <div class="xai-card-body">
+                    <div class="xai-chart-container" id="xaiGlobalNativeImportanceChart"></div>
+                    <div class="xai-loading" id="xaiGlobalNativeImportanceLoading">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Loading native feature importance...</span>
+                    </div>
+                    <div class="xai-error" id="xaiGlobalNativeImportanceError" style="display:none;"></div>
+                    <div class="xai-empty" id="xaiGlobalNativeImportanceEmpty" style="display:none;">
+                        <p>Native feature importance is not available for this model type.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permutation Importance Panel -->
+        <div class="xai-subtab-panel" data-subtab="permutation">
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>Permutation Importance</h3>
+                    <span class="xai-badge xai-badge-permutation">Permutation</span>
+                </div>
+                <div class="xai-card-body">
+                    <div class="xai-chart-container" id="xaiGlobalPermutationChart"></div>
+                    <div class="xai-loading" id="xaiGlobalPermutationLoading">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Computing permutation importance (this may take a moment)...</span>
+                    </div>
+                    <div class="xai-error" id="xaiGlobalPermutationError" style="display:none;"></div>
+                </div>
+            </div>
+            <div class="xai-info-banner" id="xaiGlobalPermutationInfo" style="display:none; margin-top:1rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#6366F1; flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span>Permutation importance is computed by shuffling each feature and measuring the drop in performance. Error bars show standard deviation across repetitions.</span>
+            </div>
+        </div>
+
+        <!-- SHAP Summary Panel -->
+        <div class="xai-subtab-panel" data-subtab="shap-summary">
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>SHAP Summary (Beeswarm)</h3>
+                    <span class="xai-badge xai-badge-shap">SHAP</span>
+                </div>
+                <div class="xai-card-body">
+                    <div class="xai-chart-container xai-chart-container-lg" id="xaiGlobalShapSummaryChart"></div>
+                    <div class="xai-loading" id="xaiGlobalShapSummaryLoading">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Computing SHAP values for all samples (this may take a moment)...</span>
+                    </div>
+                    <div class="xai-error" id="xaiGlobalShapSummaryError" style="display:none;"></div>
+                </div>
+            </div>
+            <div class="xai-info-banner" id="xaiGlobalShapSummaryInfo" style="display:none; margin-top:1rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#6366F1; flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span>Each dot is a single observation. Position on the x-axis shows the SHAP value (impact on prediction). Color shows the feature value (red = high, blue = low).</span>
+            </div>
+        </div>
+
+        <!-- SHAP Dependence Panel -->
+        <div class="xai-subtab-panel" data-subtab="shap-dependence">
+            <div class="xai-controls-bar">
+                <div class="xai-control-group">
+                    <label for="xaiDependenceFeature">Feature</label>
+                    <select id="xaiDependenceFeature" class="xai-select" onchange="XAIGlobal.loadDependencePlot()">
+                        <option value="">Select a feature...</option>
+                    </select>
+                </div>
+                <div class="xai-control-group">
+                    <label for="xaiDependenceInteraction">Interaction Feature (optional)</label>
+                    <select id="xaiDependenceInteraction" class="xai-select" onchange="XAIGlobal.loadDependencePlot()">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="XAIGlobal.loadDependencePlot()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    Plot
+                </button>
+            </div>
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>SHAP Dependence Plot</h3>
+                    <span class="xai-badge xai-badge-shap">SHAP</span>
+                </div>
+                <div class="xai-card-body">
+                    <div class="xai-chart-container" id="xaiGlobalShapDependenceChart"></div>
+                    <div class="xai-loading" id="xaiGlobalShapDependenceLoading">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Computing SHAP dependence values...</span>
+                    </div>
+                    <div class="xai-error" id="xaiGlobalShapDependenceError" style="display:none;"></div>
+                    <div class="xai-empty" id="xaiGlobalShapDependenceEmpty" style="display:none;">
+                        <p>Select a feature above to view its SHAP dependence plot.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="xai-info-banner" id="xaiGlobalShapDependenceInfo" style="display:none; margin-top:1rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#6366F1; flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span>Shows how a single feature's value affects the prediction. Each dot is one observation. Selecting an interaction feature colors the dots by that feature's value.</span>
+            </div>
+        </div>
+
+        <!-- Comparison Panel -->
+        <div class="xai-subtab-panel" data-subtab="comparison">
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>Importance Comparison</h3>
+                    <span class="xai-card-subtitle">Ranking comparison across methods</span>
+                </div>
+                <div class="xai-card-body" style="overflow-x:auto;">
+                    <div id="xaiGlobalComparisonTable">
+                        <div class="xai-loading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Computing all importance methods for comparison...</span>
+                        </div>
+                    </div>
+                    <div class="xai-error" id="xaiGlobalComparisonError" style="display:none;"></div>
+                </div>
+            </div>
+            <div class="xai-info-banner" id="xaiGlobalComparisonInfo" style="display:none; margin-top:1rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#6366F1; flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span>Different explanation methods may produce different rankings. Consistency across methods increases confidence in the importance of a feature.</span>
+            </div>
+
+            <!-- Comparison Chart -->
+            <div class="xai-card" style="margin-top:1rem;">
+                <div class="xai-card-header">
+                    <h3>Importance Comparison Chart</h3>
+                </div>
+                <div class="xai-card-body">
+                    <div class="xai-chart-container" id="xaiGlobalComparisonChart"></div>
+                    <div class="xai-loading" id="xaiGlobalComparisonChartLoading">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Loading comparison chart...</span>
+                    </div>
+                    <div class="xai-error" id="xaiGlobalComparisonChartError" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /xai-subtab-panels -->
+
+    <!-- Global Warnings -->
+    <div class="xai-warning" id="xaiGlobalPageWarnings" style="display:none; margin-top:1.25rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+        <div id="xaiGlobalPageWarningsContent"></div>
+    </div>
+
+    <!-- Error Display -->
+    <div class="xai-error" id="xaiGlobalPageError" style="display:none;"></div>
+
+    <!-- Toast -->
+    <div id="xaiToast" class="xai-toast" style="display:none;"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.MODEL_ID = {{ model_id }};
+</script>
+<script src="{{ url_for('static', filename='js/xai.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'dashboard' %}
+
+{% block title %}Search Results — DataViz Pro{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Search Results</h1>
+        <p class="dash-page-subtitle">Results for "{{ query }}"</p>
+    </div>
+    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-secondary">
+        &larr; Back to Dashboard
+    </a>
+</div>
+
+<div class="dash-panel dash-panel-full">
+    <div class="panel-header-row">
+        <h2 class="panel-title">Matching Datasets ({{ results|length }})</h2>
+    </div>
+    
+    {% if results %}
+    <div class="projects-table-wrap">
+        <table class="projects-table">
+            <thead>
+                <tr>
+                    <th>Dataset Name</th>
+                    <th>Format</th>
+                    <th>Rows</th>
+                    <th>Columns</th>
+                    <th>Uploaded</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ds in results %}
+                <tr>
+                    <td class="td-name"><a href="{{ url_for('datasets.detail', dataset_id=ds.id) }}">{{ ds.name }}</a></td>
+                    <td><span class="format-badge format-badge-{{ ds.file_format }}" style="font-size:0.68rem;">{{ ds.file_format|upper }}</span></td>
+                    <td>{{ '{:,.0f}'.format(ds.row_count) if ds.row_count else '—' }}</td>
+                    <td>{{ ds.column_count if ds.column_count else '—' }}</td>
+                    <td>{{ ds.created_at.strftime('%b %d, %Y') if ds.created_at else '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('datasets.detail', dataset_id=ds.id) }}" class="btn btn-primary btn-sm">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state compact">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <h3>No results found</h3>
+        <p>We couldn't find anything matching "{{ query }}".</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

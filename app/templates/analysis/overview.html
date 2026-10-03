@@ -1,0 +1,111 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container, priority_badge, type_badge %}
+
+{% block title %}Overview — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'overview') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiRows">—</span>
+            <span class="kpi-label">Total Rows</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiCols">—</span>
+            <span class="kpi-label">Total Columns</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiNumeric">—</span>
+            <span class="kpi-label">Numeric Cols</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiCategorical">—</span>
+            <span class="kpi-label">Categorical Cols</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiMissing">—</span>
+            <span class="kpi-label">Missing Values</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiMissingPct">—</span>
+            <span class="kpi-label">Missing %</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiDuplicates">—</span>
+            <span class="kpi-label">Duplicates</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="kpiMemory">—</span>
+            <span class="kpi-label">Memory (MB)</span>
+        </div>
+    </div>
+
+    <!-- Two-column layout: Schema + Quality -->
+    <div class="analysis-two-col">
+        <!-- Schema Table -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Dataset Schema</h2>
+            <div class="schema-table-wrap">
+                <table class="schema-table" id="schemaTable">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Type</th>
+                            <th>Missing</th>
+                            <th>Unique</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schemaBody">
+                        <tr><td colspan="4" class="table-empty">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quality Summary -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Quality Summary</h2>
+            <div id="qualitySummary">
+                <div class="quality-score-wrap" id="qualityScoreWrap" style="display:none;">
+                    <div class="quality-score-ring">
+                        <span class="quality-score-value" id="qualityScoreValue">—</span>
+                    </div>
+                    <span class="quality-score-label">Quality Score</span>
+                </div>
+                <div class="quality-metrics-list" id="qualityMetrics">
+                    <p class="text-muted">Loading quality data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insights Preview -->
+    <div class="dash-panel dash-panel-full">
+        <h2 class="panel-title">Key Insights Preview</h2>
+        <div id="insightsPreview" class="insights-list">
+            <p class="text-muted">Loading insights...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.loadOverview("{{ dataset.id }}");
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'datasets' %}
+
+{% block title %}Preview: {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datasets.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="dash-page-header">
+    <div>
+        <div class="detail-breadcrumb">
+            <a href="{{ url_for('datasets.index') }}">Datasets</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{{ url_for('datasets.detail', dataset_id=dataset.id) }}">{{ dataset.name }}</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>Preview</span>
+        </div>
+        <h1 class="dash-page-title">Data Preview</h1>
+        <p class="dash-page-subtitle">
+            Showing {{ preview_rows }} of {{ '{:,.0f}'.format(total_rows) }} rows
+            {% if total_rows > preview_rows %}
+            &mdash; <a href="{{ url_for('datasets.download', dataset_id=dataset.id) }}">Download full dataset</a> to see all data.
+            {% endif %}
+        </p>
+    </div>
+    <div class="detail-actions">
+        <a href="{{ url_for('datasets.detail', dataset_id=dataset.id) }}" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            Back to Overview
+        </a>
+        <a href="{{ url_for('datasets.download', dataset_id=dataset.id) }}" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Download
+        </a>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="dash-panel">
+    <div class="panel-header-row">
+        <h2 class="panel-title">{{ dataset.name }}</h2>
+        <span class="preview-badge">{{ columns|length }} columns</span>
+    </div>
+
+    <div class="data-table-container">
+        <table class="data-table" id="previewTable">
+            <thead>
+                <tr>
+                    <th class="row-num-col">#</th>
+                    {% for col in columns %}
+                    <th>
+                        {{ col }}
+                        <button class="col-sort-btn" data-col="{{ col }}" title="Sort">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                        </button>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td class="row-num-col">{{ loop.index }}</td>
+                    {% for col in columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if total_rows > preview_rows or page > 1 %}
+    <div class="preview-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px;">
+        <p>Showing rows {{ (page - 1) * per_page + 1 }} to {{ [(page * per_page), total_rows]|min }} of {{ '{:,.0f}'.format(total_rows) }} total rows.</p>
+        
+        <div class="pagination-controls" style="display: flex; gap: 10px; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--color-text-muted);">Rows per page:</span>
+            <select onchange="window.location.href='?page=1&per_page=' + this.value" class="form-control" style="width: auto; padding: 4px 8px; font-size: 0.85rem; height: auto;">
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
+            </select>
+            
+            <div class="btn-group">
+                {% if page > 1 %}
+                <a href="?page={{ page - 1 }}&per_page={{ per_page }}" class="btn btn-sm btn-secondary">&laquo; Prev</a>
+                {% else %}
+                <button class="btn btn-sm btn-secondary" disabled>&laquo; Prev</button>
+                {% endif %}
+                
+                <span class="btn btn-sm" style="pointer-events: none; background: transparent; border-color: transparent;">Page {{ page }} of {{ total_pages }}</span>
+                
+                {% if page < total_pages %}
+                <a href="?page={{ page + 1 }}&per_page={{ per_page }}" class="btn btn-sm btn-secondary">Next &raquo;</a>
+                {% else %}
+                <button class="btn btn-sm btn-secondary" disabled>Next &raquo;</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="preview-footer">
+        <p>Showing all {{ preview_rows }} rows.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/datasets.js') }}"></script>
+{% endblock %}

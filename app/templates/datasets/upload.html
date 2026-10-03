@@ -1,0 +1,365 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'upload' %}
+
+{% block title %}Upload Dataset — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datasets.css') }}">
+<style>
+    .upload-tabs {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--color-border);
+    }
+    .upload-tab {
+        padding: 10px 15px;
+        color: var(--color-text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+    }
+    .upload-tab.active {
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
+    }
+    .db-form-group {
+        margin-bottom: 15px;
+    }
+    .db-form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: var(--color-text);
+    }
+    .db-form-group input, .db-form-group select, .db-form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        background: var(--color-bg);
+        color: var(--color-text);
+    }
+    .db-form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .db-form-row {
+        display: flex;
+        gap: 15px;
+    }
+    .db-form-row > * {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Import Dataset</h1>
+        <p class="dash-page-subtitle">Upload a local file or connect to a database to import data.</p>
+    </div>
+</div>
+
+<div class="upload-container">
+    
+    <div class="upload-tabs">
+        <a class="upload-tab active" data-target="tab-file">File Upload</a>
+        <a class="upload-tab" data-target="tab-db">Database Connection</a>
+        <a class="upload-tab" data-target="tab-api">API Connection</a>
+    </div>
+
+    <!-- TAB: File Upload -->
+    <div id="tab-file" class="upload-tab-content">
+        <form method="POST" enctype="multipart/form-data" id="uploadForm" action="{{ url_for('datasets.upload') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- Drag & Drop Zone -->
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-zone-content">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" x2="12" y1="3" y2="15"/>
+                        </svg>
+                    </div>
+                    <h2 class="upload-title">Drag & Drop your dataset</h2>
+                    <p class="upload-subtitle">or click to browse</p>
+                    <div class="upload-formats">
+                        <span class="format-tag">CSV</span>
+                        <span class="format-tag">Excel</span>
+                        <span class="format-tag">JSON</span>
+                        <span class="format-tag">Parquet</span>
+                    </div>
+                    <p class="upload-size-info">Maximum file size: {{ max_size_mb }} MB</p>
+                    <input type="file" name="file" id="fileInput" accept=".csv,.xlsx,.xls,.json,.parquet" class="upload-file-input">
+                </div>
+            </div>
+
+            <!-- Selected File Info -->
+            <div class="upload-file-info" id="fileInfo" style="display:none;">
+                <div class="file-info-row">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="file-info-name" id="fileName"></span>
+                    <button type="button" class="file-info-remove" id="removeFile" title="Remove file">&times;</button>
+                </div>
+            </div>
+
+            <!-- Upload Button -->
+            <div class="upload-actions" id="uploadActions" style="display:none;">
+                <button type="submit" class="btn btn-primary btn-upload" id="uploadBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    Upload Dataset
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="upload-loading" id="uploadLoading" style="display:none;">
+                <div class="loading-spinner" style="width:32px;height:32px;border-width:3px;"></div>
+                <div class="upload-steps">
+                    <div class="upload-step" id="step-validate">
+                        <span class="step-dot"></span>
+                        <span class="step-text">Validating file...</span>
+                    </div>
+                    <div class="upload-step" id="step-load">
+                        <span class="step-dot"></span>
+                        <span class="step-text">Reading dataset...</span>
+                    </div>
+                    <div class="upload-step" id="step-profile">
+                        <span class="step-dot"></span>
+                        <span class="step-text">Profiling data...</span>
+                    </div>
+                    <div class="upload-step" id="step-save">
+                        <span class="step-dot"></span>
+                        <span class="step-text">Saving...</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- TAB: Database Import -->
+    <div id="tab-db" class="upload-tab-content" style="display:none; padding: 20px; background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border);">
+        <form method="POST" action="{{ url_for('datasets.connect_db') }}" id="dbForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="db-form-row">
+                <div class="db-form-group">
+                    <label>Data Source Type</label>
+                    <select name="source_type" id="dbSourceType" required>
+                        <option value="mysql">MySQL</option>
+                        <option value="postgresql">PostgreSQL</option>
+                        <option value="sqlite">SQLite</option>
+                    </select>
+                </div>
+                <div class="db-form-group">
+                    <label>Dataset Name (Optional)</label>
+                    <input type="text" name="dataset_name" placeholder="Leave blank to use table name">
+                </div>
+            </div>
+
+            <!-- Host & Port for Network DBs -->
+            <div class="db-form-row network-db-fields">
+                <div class="db-form-group">
+                    <label>Host</label>
+                    <input type="text" name="host" placeholder="localhost or domain">
+                </div>
+                <div class="db-form-group">
+                    <label>Port</label>
+                    <input type="number" name="port" placeholder="e.g. 3306, 5432">
+                </div>
+            </div>
+
+            <!-- Auth for Network DBs -->
+            <div class="db-form-row network-db-fields">
+                <div class="db-form-group">
+                    <label>Username</label>
+                    <input type="text" name="username">
+                </div>
+                <div class="db-form-group">
+                    <label>Password</label>
+                    <input type="password" name="password">
+                </div>
+            </div>
+            
+            <div class="db-form-row network-db-fields">
+                <div class="db-form-group">
+                    <label>Database Name</label>
+                    <input type="text" name="database">
+                </div>
+                <div class="db-form-group">
+                    <label>Connection String (Overrides fields above)</label>
+                    <input type="password" name="connection_string" placeholder="mysql+pymysql://user:pwd@host/db">
+                </div>
+            </div>
+            
+            <!-- SQLite file path -->
+            <div class="db-form-group sqlite-db-fields" style="display:none;">
+                <label>SQLite Database Path</label>
+                <input type="text" name="file_path" placeholder="/path/to/database.sqlite">
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 20px 0;">
+
+            <div class="db-form-group">
+                <label>Table Name</label>
+                <input type="text" name="table_name" placeholder="Name of table to load (if blank, will load the first found table)">
+            </div>
+            
+            <div class="db-form-group">
+                <label>Custom SQL Query (Optional, overrides Table Name)</label>
+                <textarea name="sql_query" placeholder="SELECT * FROM table WHERE condition..."></textarea>
+            </div>
+            
+            <div class="db-form-group">
+                <label>Row Limit</label>
+                <input type="number" name="limit" value="100000" min="1">
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" id="dbSubmitBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    Connect & Import
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- TAB: API Connection -->
+    <div id="tab-api" class="upload-tab-content" style="display:none; padding: 20px; background: var(--color-surface); border-radius: 8px; border: 1px solid var(--color-border);">
+        <form method="POST" action="{{ url_for('datasets.connect_api') }}" id="apiForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="db-form-row">
+                <div class="db-form-group" style="flex: 2;">
+                    <label>API URL (Required)</label>
+                    <input type="url" name="api_url" placeholder="https://api.example.com/data" required>
+                </div>
+                <div class="db-form-group" style="flex: 1;">
+                    <label>Dataset Name (Optional)</label>
+                    <input type="text" name="dataset_name" placeholder="Leave blank to auto-generate">
+                </div>
+            </div>
+
+            <div class="db-form-row">
+                <div class="db-form-group">
+                    <label>Headers (Optional, JSON format)</label>
+                    <textarea name="headers" placeholder='{"Authorization": "Bearer TOKEN"}'></textarea>
+                </div>
+                <div class="db-form-group">
+                    <label>Params (Optional, JSON format)</label>
+                    <textarea name="params" placeholder='{"limit": 100, "sort": "desc"}'></textarea>
+                </div>
+            </div>
+            
+            <div class="db-form-group">
+                <label>JSON Path (Optional)</label>
+                <input type="text" name="json_path" placeholder="e.g. data.results (if omitted, will auto-detect lists)">
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" id="apiSubmitBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    Fetch & Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Supported Formats Info -->
+<div class="upload-info-panel">
+    <h3 class="info-panel-title">Supported Formats</h3>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-format">CSV</span>
+            <span class="info-desc">Comma-separated values, auto-detects encoding and delimiter</span>
+        </div>
+        <div class="info-item">
+            <span class="info-format">Excel (.xlsx / .xls)</span>
+            <span class="info-desc">Microsoft Excel workbooks, first sheet loaded by default</span>
+        </div>
+        <div class="info-item">
+            <span class="info-format">JSON</span>
+            <span class="info-desc">JSON arrays, objects, and JSONL (line-delimited JSON)</span>
+        </div>
+        <div class="info-item">
+            <span class="info-format">Parquet</span>
+            <span class="info-desc">Apache Parquet columnar storage format</span>
+        </div>
+        <div class="info-item">
+            <span class="info-format">Databases</span>
+            <span class="info-desc">MySQL, PostgreSQL, and SQLite connected via SQLAlchemy</span>
+        </div>
+        <div class="info-item">
+            <span class="info-format">REST API</span>
+            <span class="info-desc">Fetch JSON data endpoints using GET requests</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/datasets.js') }}"></script>
+<script>
+    // Tab switching logic
+    document.querySelectorAll('.upload-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.upload-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.upload-tab-content').forEach(c => c.style.display = 'none');
+            
+            this.classList.add('active');
+            const target = this.getAttribute('data-target');
+            document.getElementById(target).style.display = 'block';
+            
+            // Update URL hash for direct linking
+            history.replaceState(null, null, '#' + target.replace('tab-', ''));
+        });
+    });
+
+    // Form conditional logic based on Source Type
+    const sourceSelect = document.getElementById('dbSourceType');
+    const netFields = document.querySelectorAll('.network-db-fields');
+    const sqliteFields = document.querySelectorAll('.sqlite-db-fields');
+    
+    sourceSelect.addEventListener('change', function() {
+        if (this.value === 'sqlite') {
+            netFields.forEach(f => f.style.display = 'none');
+            sqliteFields.forEach(f => f.style.display = '');
+        } else {
+            netFields.forEach(f => f.style.display = 'flex');
+            sqliteFields.forEach(f => f.style.display = 'none');
+        }
+    });
+    
+    // Check hash on load
+    if (window.location.hash === '#database' || window.location.hash === '#db') {
+        const dbTab = document.querySelector('.upload-tab[data-target="tab-db"]');
+        if (dbTab) dbTab.click();
+    } else if (window.location.hash === '#api') {
+        const apiTab = document.querySelector('.upload-tab[data-target="tab-api"]');
+        if (apiTab) apiTab.click();
+    }
+    
+    // DB Form submit loading state
+    document.getElementById('dbForm').addEventListener('submit', function() {
+        const btn = document.getElementById('dbSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:5px;"></div> Connecting & Importing...';
+    });
+    
+    // API Form submit loading state
+    document.getElementById('apiForm').addEventListener('submit', function() {
+        const btn = document.getElementById('apiSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:5px;"></div> Fetching & Importing...';
+    });
+</script>
+{% endblock %}

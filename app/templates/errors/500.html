@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}500 — Server Error{% endblock %}
+
+{% block body %}
+<section class="error-page">
+    <div class="error-page-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    </div>
+    <h1>500</h1>
+    <h2>Server Error</h2>
+    <p>Something went wrong on our end. Our team has been notified. Please try again.</p>
+    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+    <a href="{{ url_for('main.index') }}">Go Home</a>
+</section>
+{% endblock %}

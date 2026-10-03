@@ -1,0 +1,410 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}XAI Workspace — {{ model_name|default('Model') }}{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/xai.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="xai-workspace" data-model-id="{{ model_id }}">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-header-breadcrumb">
+                <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                <span class="breadcrumb-sep">/</span>
+                <a href="{{ url_for('xai.model_selection') }}">Explainable AI</a>
+                <span class="breadcrumb-sep">/</span>
+                <span id="xaiBreadcrumbModel">{{ model_name|default('Model') }}</span>
+            </div>
+            <h1 class="page-header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+                XAI Workspace
+            </h1>
+            <p class="page-header-desc">Explore model behavior, feature importance, and individual predictions</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ url_for('xai.model_selection') }}" class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Models
+            </a>
+        </div>
+    </div>
+
+    <!-- Model Summary Card -->
+    <div class="xai-model-summary" id="xaiModelSummary">
+        <div class="xai-loading">
+            <div class="xai-loading-spinner"></div>
+            <span>Loading model details...</span>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="xai-tabs">
+        <button class="xai-tab active" data-tab="overview" onclick="XAIWorkspace.switchTab('overview')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Overview
+        </button>
+        <button class="xai-tab" data-tab="global" onclick="XAIWorkspace.switchTab('global')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Global Explanations
+        </button>
+        <button class="xai-tab" data-tab="local" onclick="XAIWorkspace.switchTab('local')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Local Explanations
+        </button>
+        <button class="xai-tab" data-tab="prediction" onclick="XAIWorkspace.switchTab('prediction')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Prediction
+        </button>
+    </div>
+
+    <!-- Tab Panels -->
+    <div class="xai-tab-panels">
+
+        <!-- ===== OVERVIEW TAB ===== -->
+        <div class="xai-tab-panel active" data-tab="overview">
+            <div class="xai-overview-grid">
+                <!-- Top Influential Features -->
+                <div class="xai-card xai-card-full">
+                    <div class="xai-card-header">
+                        <h3>Top 5 Influential Features</h3>
+                        <span class="xai-card-subtitle">Based on SHAP analysis</span>
+                    </div>
+                    <div class="xai-card-body" id="xaiTopFeatures">
+                        <div class="xai-loading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Loading feature importance...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Performance Context -->
+                <div class="xai-card">
+                    <div class="xai-card-header">
+                        <h3>Model Performance</h3>
+                    </div>
+                    <div class="xai-card-body" id="xaiModelPerformance">
+                        <div class="xai-loading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Loading performance metrics...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Methods -->
+                <div class="xai-card">
+                    <div class="xai-card-header">
+                        <h3>Available Methods</h3>
+                    </div>
+                    <div class="xai-card-body" id="xaiAvailableMethods">
+                        <div class="xai-loading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Loading methods...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation Warnings -->
+                <div class="xai-card xai-card-full" id="xaiOverviewWarnings" style="display:none;">
+                    <div class="xai-card-header">
+                        <h3>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                            Explanation Warnings
+                        </h3>
+                    </div>
+                    <div class="xai-card-body" id="xaiOverviewWarningsContent"></div>
+                </div>
+
+                <!-- Clustering Profiles (hidden by default) -->
+                <div class="xai-card xai-card-full" id="xaiClusterProfiles" style="display:none;">
+                    <div class="xai-card-header">
+                        <h3>Cluster Profiles</h3>
+                        <span class="xai-card-subtitle">Feature statistics per cluster</span>
+                    </div>
+                    <div class="xai-card-body" id="xaiClusterProfilesContent">
+                        <div class="xai-loading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Loading cluster profiles...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== GLOBAL EXPLANATIONS TAB ===== -->
+        <div class="xai-tab-panel" data-tab="global">
+            <!-- Controls -->
+            <div class="xai-controls-bar">
+                <div class="xai-control-group">
+                    <label for="xaiGlobalTopN">Top N Features</label>
+                    <select id="xaiGlobalTopN" class="xai-select" onchange="XAIWorkspace.loadGlobalExplanations()">
+                        <option value="10" selected>Top 10</option>
+                        <option value="15">Top 15</option>
+                        <option value="20">Top 20</option>
+                        <option value="all">All Features</option>
+                    </select>
+                </div>
+                <div class="xai-control-group">
+                    <label for="xaiGlobalSampleSize">Sample Size</label>
+                    <select id="xaiGlobalSampleSize" class="xai-select" onchange="XAIWorkspace.loadGlobalExplanations()">
+                        <option value="100">100 samples</option>
+                        <option value="500" selected>500 samples</option>
+                        <option value="1000">1,000 samples</option>
+                        <option value="all">All samples</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="XAIWorkspace.loadGlobalExplanations()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Refresh
+                </button>
+            </div>
+
+            <div class="xai-global-grid">
+                <!-- Feature Importance Bar Chart -->
+                <div class="xai-card xai-card-full">
+                    <div class="xai-card-header">
+                        <h3>Feature Importance</h3>
+                        <span class="xai-card-subtitle">Mean absolute SHAP values</span>
+                    </div>
+                    <div class="xai-card-body">
+                        <div class="xai-chart-container" id="xaiGlobalFeatureImportanceChart"></div>
+                        <div class="xai-loading" id="xaiGlobalFeatureImportanceLoading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Computing feature importance...</span>
+                        </div>
+                        <div class="xai-error" id="xaiGlobalFeatureImportanceError" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <!-- SHAP Summary Chart -->
+                <div class="xai-card xai-card-full">
+                    <div class="xai-card-header">
+                        <h3>SHAP Summary</h3>
+                        <span class="xai-card-subtitle">Feature value vs. impact on prediction</span>
+                    </div>
+                    <div class="xai-card-body">
+                        <div class="xai-chart-container" id="xaiGlobalShapSummaryChart"></div>
+                        <div class="xai-loading" id="xaiGlobalShapSummaryLoading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Computing SHAP values...</span>
+                        </div>
+                        <div class="xai-error" id="xaiGlobalShapSummaryError" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <!-- Importance Comparison Table -->
+                <div class="xai-card xai-card-full">
+                    <div class="xai-card-header">
+                        <h3>Importance Comparison</h3>
+                        <span class="xai-card-subtitle">Native vs. Permutation vs. SHAP</span>
+                    </div>
+                    <div class="xai-card-body" style="overflow-x:auto;">
+                        <div id="xaiGlobalComparisonTable">
+                            <div class="xai-loading">
+                                <div class="xai-loading-spinner"></div>
+                                <span>Loading comparison data...</span>
+                            </div>
+                        </div>
+                        <div class="xai-error" id="xaiGlobalComparisonError" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== LOCAL EXPLANATIONS TAB ===== -->
+        <div class="xai-tab-panel" data-tab="local">
+            <!-- Row Selector -->
+            <div class="xai-controls-bar">
+                <div class="xai-control-group">
+                    <label for="xaiLocalRowIndex">Observation Index</label>
+                    <div class="xai-row-selector">
+                        <input type="number" id="xaiLocalRowIndex" class="xai-input" value="0" min="0">
+                        <span class="xai-row-hint" id="xaiLocalRowHint">of ?</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="XAIWorkspace.loadLocalExplanation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    Explain
+                </button>
+                <button class="btn btn-secondary btn-xs" onclick="XAIWorkspace.loadRandomLocalExplanation()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
+                    Random
+                </button>
+            </div>
+
+            <!-- Prediction Display -->
+            <div class="xai-local-prediction" id="xaiLocalPrediction" style="display:none;">
+                <div class="xai-loading">
+                    <div class="xai-loading-spinner"></div>
+                    <span>Select an observation to explain...</span>
+                </div>
+            </div>
+
+            <!-- Two-column Layout -->
+            <div class="xai-local-grid">
+                <!-- SHAP Local Explanation -->
+                <div class="xai-card">
+                    <div class="xai-card-header">
+                        <h3>SHAP Explanation</h3>
+                        <span class="xai-badge xai-badge-shap">SHAP</span>
+                    </div>
+                    <div class="xai-card-body">
+                        <div class="xai-chart-container" id="xaiLocalShapChart"></div>
+                        <div class="xai-loading" id="xaiLocalShapLoading" style="display:none;">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Computing local SHAP values...</span>
+                        </div>
+                        <div class="xai-error" id="xaiLocalShapError" style="display:none;"></div>
+                        <div id="xaiLocalShapContributions" style="margin-top:1rem;"></div>
+                    </div>
+                </div>
+
+                <!-- LIME Explanation -->
+                <div class="xai-card">
+                    <div class="xai-card-header">
+                        <h3>LIME Explanation</h3>
+                        <span class="xai-badge xai-badge-lime">LIME</span>
+                    </div>
+                    <div class="xai-card-body">
+                        <div class="xai-chart-container" id="xaiLocalLimeChart"></div>
+                        <div class="xai-loading" id="xaiLocalLimeLoading" style="display:none;">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Computing LIME explanation...</span>
+                        </div>
+                        <div class="xai-error" id="xaiLocalLimeError" style="display:none;"></div>
+                        <div id="xaiLocalLimeTable" style="margin-top:1rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHAP vs LIME Comparison -->
+            <div class="xai-card xai-card-full" id="xaiLocalComparison" style="display:none; margin-top:1rem;">
+                <div class="xai-card-header">
+                    <h3>SHAP vs LIME Comparison</h3>
+                </div>
+                <div class="xai-card-body" id="xaiLocalComparisonContent"></div>
+            </div>
+
+            <!-- Local Explanation Warnings -->
+            <div class="xai-warning" id="xaiLocalWarnings" style="display:none; margin-top:1rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                <div id="xaiLocalWarningsContent"></div>
+            </div>
+        </div>
+
+        <!-- ===== PREDICTION TAB ===== -->
+        <div class="xai-tab-panel" data-tab="prediction">
+            <!-- Row Selector -->
+            <div class="xai-controls-bar">
+                <div class="xai-control-group">
+                    <label for="xaiPredRowIndex">Observation Index</label>
+                    <div class="xai-row-selector">
+                        <input type="number" id="xaiPredRowIndex" class="xai-input" value="0" min="0">
+                        <span class="xai-row-hint" id="xaiPredRowHint">of ?</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="XAIWorkspace.loadPrediction()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    Predict & Explain
+                </button>
+                <button class="btn btn-secondary btn-xs" onclick="XAIWorkspace.loadRandomPrediction()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
+                    Random
+                </button>
+            </div>
+
+            <div class="xai-prediction-layout">
+                <!-- Large Prediction Display -->
+                <div class="xai-card xai-prediction-card" id="xaiPredictionDisplay">
+                    <div class="xai-card-header">
+                        <h3>Model Prediction</h3>
+                    </div>
+                    <div class="xai-card-body" id="xaiPredictionContent">
+                        <div class="xai-loading">
+                            <div class="xai-loading-spinner"></div>
+                            <span>Select an observation to get a prediction...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Values Table -->
+                <div class="xai-card">
+                    <div class="xai-card-header">
+                        <h3>Feature Values</h3>
+                        <span class="xai-card-subtitle">Input values for this observation</span>
+                    </div>
+                    <div class="xai-card-body" style="overflow-x:auto;">
+                        <div id="xaiPredFeatureValues">
+                            <div class="xai-empty">
+                                <p>No observation selected yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Contributing Factors -->
+                <div class="xai-card">
+                    <div class="xai-card-header">
+                        <h3>Top Contributing Factors</h3>
+                        <span class="xai-card-subtitle">What drove this prediction</span>
+                    </div>
+                    <div class="xai-card-body" id="xaiPredContributing">
+                        <div class="xai-empty">
+                            <p>No prediction to explain yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business-Friendly Explanation -->
+                <div class="xai-card xai-card-full" id="xaiPredBusinessExplanation" style="display:none;">
+                    <div class="xai-card-header">
+                        <h3>Plain Language Explanation</h3>
+                        <span class="xai-card-subtitle">Business-friendly interpretation</span>
+                    </div>
+                    <div class="xai-card-body" id="xaiPredBusinessContent"></div>
+                </div>
+
+                <!-- Model Performance Context -->
+                <div class="xai-card" id="xaiPredPerformanceContext" style="display:none;">
+                    <div class="xai-card-header">
+                        <h3>Model Context</h3>
+                    </div>
+                    <div class="xai-card-body" id="xaiPredPerformanceContent"></div>
+                </div>
+
+                <!-- Explanation Caveats -->
+                <div class="xai-warning" id="xaiPredCaveats" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                    <div>
+                        <strong>Caveats</strong>
+                        <div id="xaiPredCaveatsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /xai-tab-panels -->
+
+    <!-- Global Warnings -->
+    <div class="xai-warning" id="xaiGlobalWarnings" style="display:none; margin-top:1.25rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+        <div id="xaiGlobalWarningsContent"></div>
+    </div>
+
+    <!-- Error Display -->
+    <div class="xai-error" id="xaiWorkspaceError" style="display:none;"></div>
+
+    <!-- Toast -->
+    <div id="xaiToast" class="xai-toast" style="display:none;"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.MODEL_ID = {{ model_id }};
+</script>
+<script src="{{ url_for('static', filename='js/xai.js') }}"></script>
+{% endblock %}

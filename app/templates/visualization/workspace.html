@@ -1,0 +1,421 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'visualization' %}
+
+{% block title %}Visualization — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+.viz-workspace { display: flex; gap: 20px; height: calc(100vh - 140px); }
+.viz-sidebar { width: 320px; background: white; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); overflow-y: auto; display: flex; flex-direction: column; }
+.viz-main { flex: 1; background: white; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; }
+.chart-container { flex: 1; width: 100%; position: relative; }
+.form-group { margin-bottom: 15px; }
+.form-label { display: block; font-weight: 500; margin-bottom: 5px; color: var(--text-dark); font-size: 0.9rem; }
+.form-control { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem; }
+.toolbar { padding: 10px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div class="dash-title-group">
+        <a href="{{ url_for('visualization.index') }}" class="back-link" title="Back to Datasets">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <h1 class="dash-page-title">Interactive Chart Builder</h1>
+        <p class="dash-page-subtitle">{{ dataset.name }}</p>
+    </div>
+    <div class="dash-actions">
+        <a href="{{ url_for('visualization.saved_charts') }}" class="btn btn-secondary">View Saved Charts</a>
+    </div>
+</div>
+
+<div class="viz-workspace">
+    <div class="viz-sidebar">
+        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Configuration</h3>
+        
+        <div class="form-group">
+            <label class="form-label">Chart Type</label>
+            <select id="chartType" class="form-control">
+                <optgroup label="Basic">
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="scatter">Scatter Plot</option>
+                    <option value="pie">Pie Chart</option>
+                </optgroup>
+                <optgroup label="Distribution">
+                    <option value="histogram">Histogram</option>
+                    <option value="box">Box Plot</option>
+                    <option value="violin">Violin Plot</option>
+                </optgroup>
+                <optgroup label="Advanced">
+                    <option value="heatmap">Heatmap (X / Y / Value)</option>
+                    <option value="correlation">Correlation Matrix</option>
+                    <option value="treemap">Treemap</option>
+                </optgroup>
+            </select>
+        </div>
+        
+        <div id="colSelectors">
+            <div class="form-group" id="grpX">
+                <label class="form-label" id="lblX">X Axis Column</label>
+                <select id="xCol" class="form-control">
+                    <option value="">-- Select Column --</option>
+                    {% for col in dataset.column_info %}
+                    <option value="{{ col.name }}">{{ col.name }} ({{ col.dtype }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" id="grpY">
+                <label class="form-label" id="lblY">Y Axis Column</label>
+                <select id="yCol" class="form-control">
+                    <option value="">-- Select Column --</option>
+                    {% for col in dataset.column_info %}
+                    <option value="{{ col.name }}">{{ col.name }} ({{ col.dtype }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" id="grpZ" style="display: none;">
+                <label class="form-label" id="lblZ">Z Axis / Size Column</label>
+                <select id="zCol" class="form-control">
+                    <option value="">-- Select Column --</option>
+                    {% for col in dataset.column_info %}
+                    <option value="{{ col.name }}">{{ col.name }} ({{ col.dtype }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" id="grpAgg" style="display: none;">
+                <label class="form-label">Aggregation (Y values)</label>
+                <select id="aggFunc" class="form-control">
+                    <option value="none">None (Raw Data)</option>
+                    <option value="count">Count</option>
+                    <option value="sum">Sum</option>
+                    <option value="mean">Average</option>
+                    <option value="min">Minimum</option>
+                    <option value="max">Maximum</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="flex: 1;"></div>
+        
+        <button id="btnGenerate" class="btn btn-primary w-100 mt-3" style="margin-bottom: 10px;">Generate Chart</button>
+    </div>
+    
+    <div class="viz-main">
+        <div class="toolbar" id="chartToolbar" style="display: none;">
+            <button id="btnExport" class="btn btn-sm btn-secondary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                Export PNG
+            </button>
+            <button id="btnSave" class="btn btn-sm btn-primary" onclick="openModal('saveChartModal')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Chart
+            </button>
+        </div>
+        <div id="chartContainer" class="chart-container">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:15px; opacity: 0.5;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/><path d="m9 9 3 3 5-5"/></svg>
+                Select configuration and click Generate Chart
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Save Chart Modal -->
+<div class="modal-overlay" id="saveChartModal" aria-hidden="true">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h2 class="modal-title">Save Chart</h2>
+            <button class="modal-close-btn" onclick="closeModal('saveChartModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Chart Name</label>
+                <input type="text" id="saveChartName" class="form-control" placeholder="e.g., Sales by Region 2024">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('saveChartModal')">Cancel</button>
+            <button class="btn btn-primary" id="btnConfirmSave">Save Chart</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chartType = document.getElementById('chartType');
+    const xCol = document.getElementById('xCol');
+    const yCol = document.getElementById('yCol');
+    const zCol = document.getElementById('zCol');
+    const aggFunc = document.getElementById('aggFunc');
+    
+    const grpX = document.getElementById('grpX');
+    const grpY = document.getElementById('grpY');
+    const grpZ = document.getElementById('grpZ');
+    const grpAgg = document.getElementById('grpAgg');
+    
+    const lblX = document.getElementById('lblX');
+    const lblY = document.getElementById('lblY');
+    const lblZ = document.getElementById('lblZ');
+    
+    const btnGenerate = document.getElementById('btnGenerate');
+    const chartContainer = document.getElementById('chartContainer');
+    const chartToolbar = document.getElementById('chartToolbar');
+    
+    let currentConfig = null;
+
+    // Load saved configuration if passed from template
+    let loadedConfig = null;
+    {% if loaded_config %}
+    try {
+        loadedConfig = JSON.parse({{ loaded_config|tojson }});
+    } catch (e) { console.error("Failed to parse loaded config", e); }
+    {% endif %}
+
+    function updateUI() {
+        const type = chartType.value;
+        
+        // Reset defaults
+        grpX.style.display = 'block';
+        grpY.style.display = 'block';
+        grpZ.style.display = 'none';
+        grpAgg.style.display = 'none';
+        lblX.innerText = 'X Axis Column';
+        lblY.innerText = 'Y Axis Column';
+        
+        if (type === 'histogram') {
+            grpY.style.display = 'none';
+        } 
+        else if (type === 'correlation') {
+            grpX.style.display = 'none';
+            grpY.style.display = 'none';
+        }
+        else if (type === 'pie') {
+            lblX.innerText = 'Labels Column';
+            lblY.innerText = 'Values Column';
+            grpAgg.style.display = 'block';
+        }
+        else if (type === 'treemap') {
+            lblX.innerText = 'Category / Hierarchy';
+            lblY.innerText = 'Values Column';
+            grpAgg.style.display = 'block';
+        }
+        else if (type === 'heatmap') {
+            // For a simple 2D density or aggregate heatmap
+            grpZ.style.display = 'block';
+            lblZ.innerText = 'Values (Z Axis)';
+            grpAgg.style.display = 'block';
+        }
+        else if (type === 'bar') {
+            grpAgg.style.display = 'block';
+        }
+    }
+
+    chartType.addEventListener('change', updateUI);
+    updateUI();
+    
+    // Apply loaded config
+    if (loadedConfig) {
+        chartType.value = loadedConfig.chart_type || 'scatter';
+        updateUI();
+        if (loadedConfig.x) xCol.value = loadedConfig.x;
+        if (loadedConfig.y) yCol.value = loadedConfig.y;
+        if (loadedConfig.z) zCol.value = loadedConfig.z;
+        if (loadedConfig.agg) aggFunc.value = loadedConfig.agg;
+        // Auto generate
+        setTimeout(() => btnGenerate.click(), 100);
+    }
+
+    btnGenerate.addEventListener('click', async () => {
+        const type = chartType.value;
+        const x = xCol.value;
+        const y = yCol.value;
+        const z = zCol.value;
+        const agg = ['bar', 'pie', 'treemap', 'heatmap'].includes(type) ? aggFunc.value : 'none';
+        
+        if (type !== 'correlation' && !x) {
+            alert('Please select an X/Label column');
+            return;
+        }
+        if (['scatter', 'line', 'bar', 'box', 'violin', 'pie', 'treemap'].includes(type) && !y && agg !== 'count') {
+            alert('Please select a Y/Value column');
+            return;
+        }
+        if (type === 'heatmap' && (!x || !y || !z)) {
+            alert('Please select X, Y, and Z columns for the heatmap');
+            return;
+        }
+        
+        chartContainer.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;"><div class="spinner"></div><div style="margin-top:15px;">Loading data...</div></div>';
+        chartToolbar.style.display = 'none';
+        currentConfig = null;
+        btnGenerate.disabled = true;
+        
+        try {
+            // Build API URL
+            const params = new URLSearchParams({
+                chart_type: type,
+                x: x, y: y, z: z, agg: agg
+            });
+            
+            const res = await fetch(`/visualization/api/{{ dataset.id }}/data?${params.toString()}`);
+            const data = await res.json();
+            
+            if (!res.ok || data.error) throw new Error(data.error || 'Unable to load chart data');
+            
+            chartContainer.innerHTML = '';
+            const valueLabel = agg === 'count' ? 'Row count' : (agg === 'none' ? y : `${agg} of ${y}`);
+            
+            let trace = {};
+            let layout = {
+                margin: { t: 50, l: 50, r: 20, b: 50 },
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                title: `${type.toUpperCase()} CHART`,
+                font: { family: 'Inter, system-ui, sans-serif', color: getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim() || '#0F172A' }
+            };
+            
+            if (type === 'correlation') {
+                trace = {
+                    x: data.x, y: data.y, z: data.z,
+                    type: 'heatmap', colorscale: 'RdBu', zmin: -1, zmax: 1
+                };
+                layout.title = 'Correlation Matrix';
+            } 
+            else if (type === 'histogram') {
+                trace = { x: data.x, type: 'histogram', marker: { color: document.documentElement.dataset.theme === 'dark' ? '#2dd4bf' : '#3B82F6' } };
+                layout.title = `${x} Distribution`;
+                layout.xaxis = { title: x };
+                layout.yaxis = { title: 'Count' };
+            } 
+            else if (type === 'pie') {
+                trace = { labels: data.x, values: data.y, type: 'pie', hole: 0.4 };
+                layout.title = `${valueLabel} by ${x}`;
+            }
+            else if (type === 'treemap') {
+                trace = {
+                    labels: data.x,
+                    parents: data.x.map(() => ''), // simple 1-level treemap
+                    values: data.y,
+                    type: 'treemap',
+                    textinfo: 'label+value+percent parent'
+                };
+                layout.title = `Treemap: ${valueLabel} by ${x}`;
+            }
+            else if (type === 'heatmap') {
+                // simple 2D heat (if data comes as 1D arrays we need to pivot or use histogram2d)
+                trace = {
+                    x: data.x, y: data.y, z: data.z,
+                    type: 'heatmap', colorscale: 'Viridis'
+                };
+                layout.title = `Heatmap: ${z} by ${x} & ${y}`;
+            }
+            else if (type === 'violin') {
+                trace = { x: data.x, y: data.y, type: 'violin', box: {visible: true}, meanline: {visible: true} };
+                layout.title = `Violin: ${y} by ${x}`;
+                layout.xaxis = { title: x };
+                layout.yaxis = { title: y };
+            }
+            else if (type === 'box') {
+                trace = { x: data.x, y: data.y, type: 'box' };
+                layout.title = `Box: ${y} by ${x}`;
+                layout.xaxis = { title: x };
+                layout.yaxis = { title: y };
+            }
+            else {
+                // Scatter, Line, Bar
+                trace = {
+                    x: data.x, y: data.y,
+                    type: type === 'line' ? 'scatter' : (type === 'scatter' ? 'scatter' : 'bar'),
+                };
+                if (type === 'line') trace.mode = 'lines+markers';
+                if (type === 'scatter') {
+                    trace.mode = 'markers';
+                    trace.marker = { size: 6, opacity: 0.7 };
+                }
+                layout.title = `${valueLabel} vs ${x}`;
+                layout.xaxis = { title: x };
+                layout.yaxis = { title: valueLabel };
+            }
+            
+            const axisColor = getComputedStyle(document.documentElement).getPropertyValue('--color-text-muted').trim() || '#64748b';
+            layout.xaxis = {...(layout.xaxis || {}), color: axisColor, gridcolor: getComputedStyle(document.documentElement).getPropertyValue('--color-border').trim() || '#e2e8f0'};
+            layout.yaxis = {...(layout.yaxis || {}), color: axisColor, gridcolor: getComputedStyle(document.documentElement).getPropertyValue('--color-border').trim() || '#e2e8f0'};
+            await Plotly.newPlot('chartContainer', [trace], layout, {responsive: true, displayModeBar: true});
+            currentConfig = { chart_type: type, x, y, z, agg };
+            chartToolbar.style.display = 'flex';
+            
+        } catch (err) {
+            chartContainer.textContent = `Error generating chart: ${err.message || err}`;
+            chartToolbar.style.display = 'none';
+            currentConfig = null;
+        } finally {
+            btnGenerate.disabled = false;
+        }
+    });
+
+    // Export PNG
+    document.getElementById('btnExport').addEventListener('click', () => {
+        Plotly.downloadImage('chartContainer', {format: 'png', width: 1200, height: 800, filename: 'dataviz_chart'});
+    });
+
+    // Save Chart Modal Confirm
+    document.getElementById('btnConfirmSave').addEventListener('click', async () => {
+        const name = document.getElementById('saveChartName').value.trim();
+        if (!name) {
+            alert('Please enter a chart name.');
+            return;
+        }
+        
+        if (!currentConfig) {
+            alert('No chart generated to save.');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/visualization/{{ dataset.id }}/save`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    chart_type: currentConfig.chart_type,
+                    config: currentConfig
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('Chart saved successfully!');
+                closeModal('saveChartModal');
+            } else {
+                alert('Failed to save chart: ' + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Error saving chart: ' + err);
+        }
+    });
+});
+</script>
+<style>
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid rgba(0,0,0,0.1);
+    border-left-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+{% endblock %}

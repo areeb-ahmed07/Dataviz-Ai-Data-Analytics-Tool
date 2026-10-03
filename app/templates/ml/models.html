@@ -1,0 +1,84 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Saved Models{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ml.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="ml-models-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-header-breadcrumb">
+                <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                <span class="breadcrumb-sep">/</span>
+                <span>Saved Models</span>
+            </div>
+            <h1 class="page-header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
+                Saved Models
+            </h1>
+            <p class="page-header-desc">View, manage, and download your trained machine learning models</p>
+        </div>
+    </div>
+
+    <!-- Models Grid -->
+    <div class="ml-models-grid" id="mlModelsList">
+        <div class="ml-loading">
+            <div class="ml-loading-spinner"></div>
+            Loading models...
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="ml-empty-state" id="modelsEmpty" style="display:none;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
+        <h3>No Saved Models</h3>
+        <p>Train and save models from the ML Studio to see them here.</p>
+        <a href="{{ url_for('ml.index') }}" class="btn btn-primary btn-sm">Train New Model</a>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="ml-modal-overlay" id="deleteModelModal" style="display:none;">
+    <div class="ml-modal">
+        <div class="ml-modal-header">
+            <h3>Delete Model</h3>
+            <button class="ml-modal-close" onclick="MLStudio.closeDeleteModal()">&times;</button>
+        </div>
+        <div class="ml-modal-body">
+            <p>Are you sure you want to delete <strong id="deleteModelName"></strong>?</p>
+            <p class="ml-warning-text">This action cannot be undone. The model file and all metadata will be permanently removed.</p>
+        </div>
+        <div class="ml-modal-footer">
+            <button class="btn btn-secondary" onclick="MLStudio.closeDeleteModal()">Cancel</button>
+            <button class="btn btn-danger" id="btnConfirmDelete" onclick="MLStudio.confirmDeleteModel()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Model Detail Modal -->
+<div class="ml-modal-overlay" id="modelDetailModal" style="display:none;">
+    <div class="ml-modal ml-modal-lg">
+        <div class="ml-modal-header">
+            <h3 id="detailModalTitle">Model Details</h3>
+            <button class="ml-modal-close" onclick="MLStudio.closeDetailModal()">&times;</button>
+        </div>
+        <div class="ml-modal-body" id="modelDetailContent"></div>
+        <div class="ml-modal-footer">
+            <button class="btn btn-secondary" onclick="MLStudio.closeDetailModal()">Close</button>
+            <button class="btn btn-primary" id="btnDownloadFromDetail" onclick="">Download</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="mlToast" class="ml-toast" style="display:none;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/ml.js') }}"></script>
+{% endblock %}

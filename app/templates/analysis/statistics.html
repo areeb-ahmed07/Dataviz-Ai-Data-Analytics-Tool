@@ -1,0 +1,115 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container %}
+
+{% block title %}Statistics — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'statistics') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- Numeric Statistics -->
+    <div class="dash-panel dash-panel-full">
+        <div class="panel-title-row">
+            <h2 class="panel-title">Numeric Column Statistics</h2>
+            <span class="panel-badge" id="numericBadge">0 columns</span>
+        </div>
+        <div class="stats-table-wrap">
+            <table class="stats-table" id="numericStatsTable">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Count</th>
+                        <th>Mean</th>
+                        <th>Std</th>
+                        <th>Min</th>
+                        <th>Q1</th>
+                        <th>Median</th>
+                        <th>Q3</th>
+                        <th>Max</th>
+                        <th>IQR</th>
+                        <th>Skew</th>
+                        <th>Kurtosis</th>
+                        <th>Zeros %</th>
+                    </tr>
+                </thead>
+                <tbody id="numericBody">
+                    <tr><td colspan="13" class="table-empty">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="noNumericMsg" style="display:none;" class="text-muted" style="padding:1rem;">
+            No numeric columns found in this dataset.
+        </div>
+    </div>
+
+    <!-- Categorical Statistics -->
+    <div class="dash-panel dash-panel-full">
+        <div class="panel-title-row">
+            <h2 class="panel-title">Categorical Column Statistics</h2>
+            <span class="panel-badge" id="categoricalBadge">0 columns</span>
+        </div>
+        <div class="stats-table-wrap">
+            <table class="stats-table" id="categoricalStatsTable">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Count</th>
+                        <th>Unique</th>
+                        <th>Top Value</th>
+                        <th>Top Frequency</th>
+                        <th>Top %</th>
+                        <th>Cardinality</th>
+                    </tr>
+                </thead>
+                <tbody id="categoricalBody">
+                    <tr><td colspan="7" class="table-empty">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="noCategoricalMsg" style="display:none;" class="text-muted" style="padding:1rem;">
+            No categorical columns found in this dataset.
+        </div>
+    </div>
+
+    <!-- Datetime Statistics -->
+    <div class="dash-panel dash-panel-full" id="datetimePanel" style="display:none;">
+        <div class="panel-title-row">
+            <h2 class="panel-title">Datetime Column Statistics</h2>
+            <span class="panel-badge" id="datetimeBadge">0 columns</span>
+        </div>
+        <div class="stats-table-wrap">
+            <table class="stats-table" id="datetimeStatsTable">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Count</th>
+                        <th>Min Date</th>
+                        <th>Max Date</th>
+                        <th>Range (Days)</th>
+                        <th>Missing</th>
+                    </tr>
+                </thead>
+                <tbody id="datetimeBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.loadStatistics("{{ dataset.id }}");
+</script>
+{% endblock %}

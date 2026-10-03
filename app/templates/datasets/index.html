@@ -1,0 +1,151 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'datasets' %}
+
+{% block title %}Datasets — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datasets.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Datasets</h1>
+        <p class="dash-page-subtitle">Manage and analyze your uploaded datasets.</p>
+    </div>
+    <a href="{{ url_for('datasets.upload_page') }}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+        Upload Dataset
+    </a>
+</div>
+
+<!-- Search Bar -->
+<div class="dataset-search-bar" style="display: flex; flex-direction: column; gap: 15px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <div class="search-input-wrap">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" class="search-input" id="datasetSearch" placeholder="Search datasets..." value="{{ search }}" autocomplete="off" onkeydown="if(event.key === 'Enter') window.location.href='?q=' + this.value + '&format={{ format_filter }}'">
+        </div>
+        <span class="dataset-count">{{ datasets|length }} dataset{{ 's' if datasets|length != 1 else '' }}</span>
+    </div>
+    <div class="dataset-filters" style="display: flex; gap: 10px;">
+        <a href="?q={{ search }}" class="btn btn-sm {% if not format_filter %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+        <a href="?q={{ search }}&format=csv" class="btn btn-sm {% if format_filter == 'csv' %}btn-primary{% else %}btn-secondary{% endif %}">CSV</a>
+        <a href="?q={{ search }}&format=xlsx" class="btn btn-sm {% if format_filter == 'xlsx' %}btn-primary{% else %}btn-secondary{% endif %}">Excel</a>
+        <a href="?q={{ search }}&format=json" class="btn btn-sm {% if format_filter == 'json' %}btn-primary{% else %}btn-secondary{% endif %}">JSON / API</a>
+        <a href="?q={{ search }}&format=parquet" class="btn btn-sm {% if format_filter == 'parquet' %}btn-primary{% else %}btn-secondary{% endif %}">Parquet / DB</a>
+    </div>
+</div>
+
+<!-- Dataset Grid -->
+{% if datasets %}
+<div class="dataset-grid">
+    {% for ds in datasets %}
+    <div class="dataset-card" data-name="{{ ds.name|lower }}" data-format="{{ ds.file_format }}">
+        <div class="dataset-card-header">
+            <div class="dataset-icon dataset-icon-{{ ds.file_format }}">
+                {% if ds.file_format == 'csv' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/></svg>
+                {% elif ds.file_format in ('xlsx', 'xls') %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><rect width="10" height="8" x="7" y="12" rx="1"/><path d="M12 12v8"/></svg>
+                {% elif ds.file_format == 'json' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>
+                {% elif ds.file_format == 'parquet' %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h8v8H8z"/></svg>
+                {% else %}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                {% endif %}
+            </div>
+            <div class="dataset-card-title-wrap">
+                <h3 class="dataset-card-title">{{ ds.name }}</h3>
+                <span class="dataset-card-filename">{{ ds.original_filename }}</span>
+            </div>
+        </div>
+
+        <div class="dataset-card-stats">
+            <div class="ds-stat">
+                <span class="ds-stat-label">Format</span>
+                <span class="ds-stat-value">
+                    <span class="format-badge format-badge-{{ ds.file_format }}">{{ format_labels.get(ds.file_format, ds.file_format|upper) }}</span>
+                </span>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Rows</span>
+                <span class="ds-stat-value">{{ '{:,.0f}'.format(ds.row_count) if ds.row_count else '—' }}</span>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Columns</span>
+                <span class="ds-stat-value">{{ ds.column_count if ds.column_count else '—' }}</span>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Size</span>
+                <span class="ds-stat-value">{{ (ds.file_size / (1024*1024)) | round(1) if ds.file_size else '—' }} MB</span>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Uploaded</span>
+                <span class="ds-stat-value">{{ ds.created_at.strftime('%b %d, %Y') if ds.created_at else '—' }}</span>
+            </div>
+        </div>
+
+        <div class="dataset-card-actions">
+            <a href="{{ url_for('datasets.detail', dataset_id=ds.id) }}" class="btn btn-sm btn-primary">Open</a>
+            <a href="{{ url_for('datasets.preview', dataset_id=ds.id) }}" class="btn btn-sm btn-secondary">Preview</a>
+            <a href="{{ url_for('datasets.download', dataset_id=ds.id) }}" class="btn btn-sm btn-secondary" title="Download">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            </a>
+            <button class="btn btn-sm btn-ghost btn-delete-ds" data-id="{{ ds.id }}" data-name="{{ ds.name }}" title="Delete">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="empty-state">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.4">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M3 5V19A9 3 0 0 0 21 19V5"/>
+        <path d="M3 12A9 3 0 0 0 21 12"/>
+    </svg>
+    <h3>No datasets yet</h3>
+    <p>Upload your first dataset to start exploring and analyzing your data with DataViz Pro.</p>
+    <a href="{{ url_for('datasets.upload_page') }}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+        Upload Dataset
+    </a>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+{% include "components/modal.html" %}
+<div class="modal-overlay" id="deleteModal" aria-hidden="true">
+    <div class="modal-panel modal-sm">
+        <div class="modal-header">
+            <h2 class="modal-title">Delete Dataset?</h2>
+            <button class="modal-close-btn" onclick="closeModal('deleteModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>This will permanently remove:</p>
+            <p class="modal-dataset-name" id="deleteDatasetName"></p>
+            <p class="modal-warning-text">This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary btn-sm" onclick="closeModal('deleteModal')">Cancel</button>
+            <form method="POST" id="deleteForm" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="dataset_id" id="deleteDatasetId">
+                <button type="submit" class="btn btn-sm" style="background:#DC2626;color:#fff;">Delete Dataset</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/datasets.js') }}"></script>
+{% endblock %}

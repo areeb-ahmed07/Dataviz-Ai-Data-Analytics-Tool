@@ -1,0 +1,186 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Local Explanations — {{ model_name|default('Model') }}{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/xai.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="xai-local-page" data-model-id="{{ model_id }}">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-header-breadcrumb">
+                <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                <span class="breadcrumb-sep">/</span>
+                <a href="{{ url_for('xai.model_selection') }}">Explainable AI</a>
+                <span class="breadcrumb-sep">/</span>
+                <a href="{{ url_for('xai.explain', model_id=model_id) }}" id="xaiBreadcrumbModel">{{ model_name|default('Model') }}</a>
+                <span class="breadcrumb-sep">/</span>
+                <span>Local Explanations</span>
+            </div>
+            <h1 class="page-header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Local Explanations
+            </h1>
+            <p class="page-header-desc">Understand individual predictions with SHAP and LIME explanations</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ url_for('xai.explain', model_id=model_id) }}" class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                Back to Workspace
+            </a>
+        </div>
+    </div>
+
+    <!-- Row Selector -->
+    <div class="xai-controls-bar">
+        <div class="xai-control-group">
+            <label for="xaiLocalRowIndex">Observation Index</label>
+            <div class="xai-row-selector">
+                <input type="number" id="xaiLocalRowIndex" class="xai-input" value="0" min="0">
+                <span class="xai-row-hint" id="xaiLocalRowMax">of ?</span>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="xaiLocalExplainBtn" onclick="XAILocal.explain()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Explain
+        </button>
+        <button class="btn btn-secondary btn-xs" onclick="XAILocal.explainRandom()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
+            Random
+        </button>
+    </div>
+
+    <!-- Prediction Card -->
+    <div class="xai-prediction-summary" id="xaiLocalPredictionCard">
+        <div class="xai-loading">
+            <div class="xai-loading-spinner"></div>
+            <span>Select an observation to explain...</span>
+        </div>
+    </div>
+
+    <!-- Two-column Layout: SHAP and LIME -->
+    <div class="xai-local-two-col">
+        <!-- Left Column: SHAP -->
+        <div class="xai-local-col">
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>SHAP Local Explanation</h3>
+                    <span class="xai-badge xai-badge-shap">SHAP</span>
+                </div>
+                <div class="xai-card-body">
+                    <!-- Waterfall-style chart -->
+                    <div class="xai-chart-container" id="xaiLocalShapWaterfallChart"></div>
+                    <div class="xai-loading" id="xaiLocalShapLoading" style="display:none;">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Computing local SHAP values...</span>
+                    </div>
+                    <div class="xai-error" id="xaiLocalShapError" style="display:none;"></div>
+                    <div class="xai-empty" id="xaiLocalShapEmpty" style="display:none;">
+                        <p>Explain an observation to see SHAP values.</p>
+                    </div>
+
+                    <!-- Positive / Negative Contributions -->
+                    <div id="xaiLocalShapContributions" style="display:none; margin-top:1.25rem;">
+                        <div class="xai-contributions-section">
+                            <h4 class="xai-contributions-title xai-contributions-positive">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                                Positive Contributions
+                            </h4>
+                            <div class="xai-contributions-list" id="xaiShapPositiveList"></div>
+                        </div>
+                        <div class="xai-contributions-section">
+                            <h4 class="xai-contributions-title xai-contributions-negative">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+                                Negative Contributions
+                            </h4>
+                            <div class="xai-contributions-list" id="xaiShapNegativeList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: LIME -->
+        <div class="xai-local-col">
+            <div class="xai-card">
+                <div class="xai-card-header">
+                    <h3>LIME Explanation</h3>
+                    <span class="xai-badge xai-badge-lime">LIME</span>
+                </div>
+                <div class="xai-card-body">
+                    <!-- Diverging bar chart -->
+                    <div class="xai-chart-container" id="xaiLocalLimeDivergingChart"></div>
+                    <div class="xai-loading" id="xaiLocalLimeLoading" style="display:none;">
+                        <div class="xai-loading-spinner"></div>
+                        <span>Computing LIME explanation...</span>
+                    </div>
+                    <div class="xai-error" id="xaiLocalLimeError" style="display:none;"></div>
+                    <div class="xai-empty" id="xaiLocalLimeEmpty" style="display:none;">
+                        <p>Explain an observation to see LIME values.</p>
+                    </div>
+
+                    <!-- LIME Condition + Contribution Table -->
+                    <div id="xaiLocalLimeTableWrapper" style="display:none; margin-top:1.25rem;">
+                        <h4 style="font-size:0.85rem; font-weight:600; margin-bottom:0.5rem; color:var(--color-text-secondary, #475569);">Feature Conditions & Contributions</h4>
+                        <div style="overflow-x:auto;">
+                            <table class="xai-table" id="xaiLocalLimeTable">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>Condition</th>
+                                        <th>Contribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="xaiLocalLimeTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHAP vs LIME Comparison -->
+    <div class="xai-card xai-card-full" id="xaiLocalComparison" style="display:none; margin-top:1.25rem;">
+        <div class="xai-card-header">
+            <h3>SHAP vs LIME Comparison</h3>
+            <span class="xai-card-subtitle">How well do the two methods agree?</span>
+        </div>
+        <div class="xai-card-body" id="xaiLocalComparisonContent"></div>
+    </div>
+
+    <!-- Business-Friendly Explanation -->
+    <div class="xai-card xai-card-full" id="xaiLocalBusinessExplanation" style="display:none; margin-top:1rem;">
+        <div class="xai-card-header">
+            <h3>Plain Language Explanation</h3>
+            <span class="xai-card-subtitle">Business-friendly interpretation of this prediction</span>
+        </div>
+        <div class="xai-card-body">
+            <div class="xai-business-text" id="xaiLocalBusinessContent"></div>
+        </div>
+    </div>
+
+    <!-- Explanation Warnings -->
+    <div class="xai-warning" id="xaiLocalPageWarnings" style="display:none; margin-top:1.25rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#D97706; flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+        <div id="xaiLocalPageWarningsContent"></div>
+    </div>
+
+    <!-- Error Display -->
+    <div class="xai-error" id="xaiLocalPageError" style="display:none;"></div>
+
+    <!-- Toast -->
+    <div id="xaiToast" class="xai-toast" style="display:none;"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.MODEL_ID = {{ model_id }};
+</script>
+<script src="{{ url_for('static', filename='js/xai.js') }}"></script>
+{% endblock %}

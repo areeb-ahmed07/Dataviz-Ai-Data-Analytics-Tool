@@ -1,0 +1,21 @@
+{% extends 'layouts/dashboard.html' %}
+{% block title %}{{ workspace.name }} — DataViz Pro{% endblock %}
+{% block content %}
+<div class="dash-page-header"><div><h1>{{ workspace.name }}</h1><p>Dataset: {{ dataset.name }}</p></div><a class="btn btn-secondary" href="/workspaces">All workspaces</a></div>
+<section class="dash-panel" style="padding:1.5rem;margin-bottom:1rem">
+    <h2>Model settings</h2>
+    <p>{{ state.config.problem_type | title }} · Target: {{ state.config.target_column or 'No target' }}</p>
+    <p>Features: {{ state.config.feature_columns | join(', ') }}</p>
+    <a class="btn btn-primary" href="/datasets/{{ dataset.id }}/ml?workspace={{ workspace.id }}">Resume ML Studio</a>
+</section>
+<section class="dash-panel" style="padding:1.5rem;margin-bottom:1rem">
+    <h2>Saved charts</h2>
+    {% for chart in state.charts %}<p><a href="/workspaces/{{ workspace.id }}/charts/{{ loop.index0 }}">{{ chart.name }}</a></p>{% else %}<p>No saved charts were attached to this dataset when the workspace was saved.</p>{% endfor %}
+</section>
+<section class="dash-panel" style="padding:1.5rem">
+    <h2>Cleaning history</h2>
+    <p>The workspace uses this dataset’s saved version. Unsaved cleaning changes are not included.</p>
+    {% for step in state.get('cleaning_history', []) %}<p><strong>{{ step.operation }}</strong> · {{ step.rows_before }} → {{ step.rows_after }} rows</p>{% else %}<p>No saved cleaning operations for this version.</p>{% endfor %}
+    <a class="btn btn-secondary" href="/datasets/{{ dataset.id }}/clean">Open cleaning</a>
+</section>
+{% endblock %}

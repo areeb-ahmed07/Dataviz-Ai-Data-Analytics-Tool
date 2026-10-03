@@ -1,0 +1,214 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'time-series' %}
+
+{% block title %}Time Series Analysis — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+.ts-workspace { display: flex; gap: 20px; min-height: calc(100vh - 120px); }
+.ts-sidebar { width: 300px; background: white; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); }
+.ts-main { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.ts-card { background: white; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); }
+.chart-container { min-height: 400px; width: 100%; }
+.form-group { margin-bottom: 15px; }
+.form-label { display: block; font-weight: 500; margin-bottom: 5px; color: var(--text-dark); }
+.form-control { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; }
+.stat-box { background: var(--bg-color); padding: 15px; border-radius: 8px; margin-top: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div class="dash-title-group">
+        <a href="{{ url_for('timeseries.index') }}" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <h1 class="dash-page-title">Time Series Analysis</h1>
+        <p class="dash-page-subtitle">{{ dataset.name }}</p>
+    </div>
+</div>
+
+<div class="ts-workspace">
+    <div class="ts-sidebar">
+        <h3>Configuration</h3>
+        
+        <div class="form-group mt-4">
+            <label class="form-label">Date/Time Column</label>
+            <select id="dateCol" class="form-control">
+                <option value="">-- Select Column --</option>
+                {% for col in dataset.column_info %}
+                <option value="{{ col.name }}">{{ col.name }} ({{ col.dtype }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Value Column</label>
+            <select id="valCol" class="form-control">
+                <option value="">-- Select Column --</option>
+                {% for col in dataset.column_info %}
+                {% if 'int' in col.dtype or 'float' in col.dtype %}
+                <option value="{{ col.name }}">{{ col.name }} ({{ col.dtype }})</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button id="btnAnalyze" class="btn btn-primary w-100 mt-3">Run Analysis</button>
+        
+        <div id="statsContainer" class="stat-box" style="display:none;"></div>
+    </div>
+    
+    <div class="ts-main">
+        <div class="ts-card">
+            <h3>Historical & Forecast (Prophet)</h3>
+            <div id="forecastChart" class="chart-container">
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">
+                    Select configuration and click Run Analysis
+                </div>
+            </div>
+        </div>
+        
+        <div class="ts-card">
+            <h3>Seasonality Decomposition</h3>
+            <div id="decompositionChart" class="chart-container" style="min-height:600px;">
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">
+                    Waiting for analysis...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const btnAnalyze = document.getElementById('btnAnalyze');
+    
+    btnAnalyze.addEventListener('click', async () => {
+        const dateCol = document.getElementById('dateCol').value;
+        const valCol = document.getElementById('valCol').value;
+        
+        if (!dateCol || !valCol) {
+            alert('Please select both Date and Value columns');
+            return;
+        }
+        
+        const forecastChart = document.getElementById('forecastChart');
+        const decompositionChart = document.getElementById('decompositionChart');
+        const statsContainer = document.getElementById('statsContainer');
+        
+        forecastChart.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;">Analyzing...</div>';
+        decompositionChart.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;">Analyzing...</div>';
+        statsContainer.style.display = 'none';
+        
+        try {
+            const res = await fetch(`/time-series/api/{{ dataset.id }}/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ date_col: dateCol, val_col: valCol })
+            });
+            const data = await res.json();
+            
+            if (data.error) {
+                forecastChart.innerHTML = `<div style="color:red;padding:20px;">Error: ${data.error}</div>`;
+                decompositionChart.innerHTML = '';
+                return;
+            }
+            
+            // Stats
+            let statHtml = '<h4>Stationarity</h4>';
+            if (data.stationarity && !data.stationarity.error) {
+                statHtml += `<p>Stationary: <strong>${data.stationarity.is_stationary ? 'Yes' : 'No'}</strong></p>`;
+                statHtml += `<p>p-value: ${data.stationarity.p_value.toFixed(4)}</p>`;
+            } else {
+                statHtml += `<p class="text-danger">Failed to calculate</p>`;
+            }
+            statsContainer.innerHTML = statHtml;
+            statsContainer.style.display = 'block';
+            
+            // Forecast chart
+            forecastChart.innerHTML = '';
+            const traces = [];
+            
+            // Historical
+            traces.push({
+                x: data.raw.dates,
+                y: data.raw.values,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'Historical',
+                    line: { color: document.documentElement.dataset.theme === 'dark' ? '#5dd3c3' : '#6366F1' }
+            });
+            
+            // Forecast
+            if (data.forecast) {
+                traces.push({
+                    x: data.forecast.dates,
+                    y: data.forecast.yhat,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Forecast',
+                    line: { color: document.documentElement.dataset.theme === 'dark' ? '#67e8f9' : '#10B981', dash: 'dash' }
+                });
+                
+                // Uncertainty bounds
+                traces.push({
+                    x: [...data.forecast.dates, ...data.forecast.dates.reverse()],
+                    y: [...data.forecast.yhat_upper, ...data.forecast.yhat_lower.reverse()],
+                    type: 'scatter',
+                    fill: 'toself',
+                    fillcolor: 'rgba(16, 185, 129, 0.2)',
+                    line: { color: 'transparent' },
+                    name: 'Uncertainty',
+                    showlegend: false
+                });
+            }
+            
+            Plotly.newPlot('forecastChart', traces, {
+                margin: { t: 30, l: 50, r: 20, b: 50 },
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+            });
+            
+            // Decomposition chart
+            decompositionChart.innerHTML = '';
+            if (data.seasonality && !data.error_seasonality) {
+                const dates = Object.keys(data.seasonality.trend);
+                const trend = Object.values(data.seasonality.trend);
+                const seasonal = Object.values(data.seasonality.seasonal);
+                const resid = Object.values(data.seasonality.residual);
+                
+                const decompTraces = [
+                    { x: dates, y: trend, type: 'scatter', mode: 'lines', name: 'Trend', yaxis: 'y1' },
+                    { x: dates, y: seasonal, type: 'scatter', mode: 'lines', name: 'Seasonal', yaxis: 'y2' },
+                    { x: dates, y: resid, type: 'scatter', mode: 'lines', name: 'Residual', yaxis: 'y3' }
+                ];
+                
+                const layout = {
+                    grid: {rows: 3, columns: 1, pattern: 'independent'},
+                    margin: { t: 30, l: 50, r: 20, b: 50 },
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    showlegend: false
+                };
+                
+                Plotly.newPlot('decompositionChart', decompTraces, layout);
+            } else {
+                decompositionChart.innerHTML = `<div style="color:var(--text-muted);padding:20px;">Could not decompose seasonality (not enough data or no cycle found).</div>`;
+            }
+            
+        } catch (err) {
+            forecastChart.innerHTML = `<div style="color:red;padding:20px;">Error: ${err}</div>`;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="DataViz Pro technical documentation and final year project report">
+<title>DataViz Pro Project Documentation</title><style>
+:root { color-scheme: light; --ink:#17212b; --muted:#566372; --border:#d9d9d9; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body { margin:0; color:var(--ink); background:#edf0f3; font:16px/1.65 'Segoe UI',Arial,sans-serif; }
+.toolbar { padding:13px 28px; background:#172c42; color:white; display:flex; gap:20px; justify-content:space-between; align-items:center; }
+.toolbar span { font-size:14px; }
+button { cursor:pointer; border:1px solid #bfcbd6; background:white; color:#172c42; padding:9px 16px; border-radius:4px; font:600 14px 'Segoe UI',Arial,sans-serif; }
+.layout { display:grid; grid-template-columns:250px minmax(0,930px); gap:36px; max-width:1280px; margin:36px auto; padding:0 26px; }
+nav { position:sticky; top:24px; align-self:start; max-height:calc(100vh - 48px); overflow:auto; font-size:13px; }
+nav p { margin:0 0 13px; color:#000; font-weight:700; letter-spacing:.06em; font-size:11px; text-transform:uppercase; }
+nav a { display:block; color:#435365; text-decoration:none; padding:7px 0; line-height:1.4; }
+nav a:hover { color:#000; text-decoration:underline; }
+main { background:white; padding:60px 65px; box-shadow:0 3px 20px #172c4210; min-width:0; }
+h1,h2,h3 { color:#000; line-height:1.22; break-after:avoid; }
+h1 { font-size:38px; font-weight:650; margin:0 0 14px; letter-spacing:-.035em; }
+h1 + p { font-size:20px; color:#45586b; margin:0 0 12px; }
+h1 + p + p { color:var(--muted); font-size:13px; margin-bottom:40px; }
+h2 { margin:42px 0 17px; font-size:25px; font-weight:650; letter-spacing:-.018em; }
+h3 { margin:26px 0 10px; font-size:18px; font-weight:650; }
+p { margin:0 0 16px; }
+li { padding-left:3px; margin:6px 0; }
+ul,ol { margin:10px 0 22px; padding-left:25px; }
+code { font: .86em/1.5 Consolas,'Courier New',monospace; overflow-wrap:anywhere; }
+p code,li code,td code { background:#f3f5f7; padding:1px 3px; }
+pre { margin:20px 0 24px; padding:16px 18px; background:#f4f6f8; border:1px solid var(--border); overflow:auto; line-height:1.45; break-inside:avoid; }
+pre code { font-size:12px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.table-scroll { overflow-x:auto; margin:18px 0 25px; }
+table { width:100%; border-collapse:collapse; table-layout:auto; font-size:13px; line-height:1.5; }
+th,td { border:1px solid var(--border); padding:11px 12px; vertical-align:middle; overflow-wrap:anywhere; text-align:left; }
+th { background:#223c55; color:#fff; font-weight:600; }
+tr:nth-child(even) td { background:#f2f5f8; }
+tr { break-inside:avoid; }
+thead { display:table-header-group; }
+td:first-child { min-width:76px; }
+footer { font-size:12px; color:#65717b; margin:44px 0 0; }
+@media(max-width:950px) { .layout { display:block; padding:0 16px; margin:20px auto; } nav { display:none; } main { padding:32px 26px; } h1 {font-size:32px;} }
+@media print {
+  @page { size:Letter; margin:.7in .7in .75in; }
+  body { font:11pt/1.45 Arial,sans-serif; background:white; color:#111; }
+  .toolbar,nav { display:none; }
+  .layout { display:block; max-width:none; padding:0; margin:0; }
+  main { padding:0; box-shadow:none; }
+  h1 { font-size:29pt; margin-top:18pt; }
+  h2 { font-size:18pt; margin-top:24pt; }
+  h3 { font-size:13pt; margin-top:16pt; }
+  p { orphans:3; widows:3; margin-bottom:10pt; }
+  table { font-size:9pt; }
+  th,td { padding:7pt 8pt; }
+  th { background:#e9eef3 !important; color:#000 !important; }
+  .table-scroll { overflow:visible; }
+  pre { padding:10pt; background:#f8f8f8; }
+  pre code { font-size:9pt; }
+  a { color:inherit; text-decoration:none; }
+  #contents + ol { columns:2; column-gap:25pt; font-size:10pt; }
+  #abstract { margin-top:25pt; }
+}
+</style></head>
+<body><div class="toolbar"><span>DataViz Pro · Project documentation · 19 September 2026</span>
+<button type="button" onclick="window.print()">Print or save as PDF</button></div>
+<div class="layout"><nav aria-label="Document contents"><p>On this page</p><a href="#1-project-background-and-objectives">1 Project background and objectives</a><a href="#2-scope-and-requirements">2 Scope and requirements</a><a href="#3-system-architecture">3 System architecture</a><a href="#4-database-and-file-storage">4 Database and file storage</a><a href="#5-functional-modules">5 Functional modules</a><a href="#6-machine-learning-methodology">6 Machine learning methodology</a><a href="#7-interface-and-api-reference">7 Interface and API reference</a><a href="#8-installation-and-configuration">8 Installation and configuration</a><a href="#9-user-guide">9 User guide</a><a href="#10-security-and-operational-considerations">10 Security and operational considerations</a><a href="#11-testing-and-evaluation">11 Testing and evaluation</a><a href="#12-known-limitations">12 Known limitations</a><a href="#13-future-development">13 Future development</a><a href="#14-demonstration-and-handover">14 Demonstration and handover</a><a href="#15-source-reference-and-glossary">15 Source reference and glossary</a></nav>
+<main><h1 id="dataviz-pro-project-documentation">DataViz Pro Project Documentation</h1>
+<p>Technical documentation and final year project report</p>
+<p>Application version 2.0.0<br>Documentation date 19 September 2026</p>
+<h2 id="abstract">Abstract</h2>
+<p>DataViz Pro is a browser-based application for exploring structured datasets and carrying out common data science tasks in one workspace. It brings together data import, profiling, cleaning, interactive visualization, machine learning, model explanation, time series analysis, and report generation. The application uses Flask for its web layer, pandas and NumPy for data processing, scikit-learn for machine learning, and SQLAlchemy for persistent records. Dataset files and trained model bundles are stored separately on the filesystem.</p>
+<p>The project addresses the effort involved in moving between spreadsheets, notebooks, plotting tools, and reporting software. Users can inspect the quality of an uploaded dataset, preserve a cleaned version, compare predictive models, and export findings without writing a separate program for each stage. Administrators can manage accounts and inspect audit records.</p>
+<p>The implemented system is a modular Flask application. Its active AI Copilot produces statistical and rule-based insights; a complete conversational assistant and natural-language dashboard generation are not part of the verified active workflow. Forecasting and some model explanations depend on additional libraries. This document explains the implemented design, installation process, user workflows, test coverage present in the repository, and known limitations relevant to a project demonstration or handover.</p>
+<h2 id="contents">Contents</h2>
+<ol><li><a href="#1-project-background-and-objectives">Project background and objectives</a></li><li><a href="#2-scope-and-requirements">Scope and requirements</a></li><li><a href="#3-system-architecture">System architecture</a></li><li><a href="#4-database-and-file-storage">Database and file storage</a></li><li><a href="#5-functional-modules">Functional modules</a></li><li><a href="#6-machine-learning-methodology">Machine learning methodology</a></li><li><a href="#7-interface-and-api-reference">Interface and API reference</a></li><li><a href="#8-installation-and-configuration">Installation and configuration</a></li><li><a href="#9-user-guide">User guide</a></li><li><a href="#10-security-and-operational-considerations">Security and operational considerations</a></li><li><a href="#11-testing-and-evaluation">Testing and evaluation</a></li><li><a href="#12-known-limitations">Known limitations</a></li><li><a href="#13-future-development">Future development</a></li><li><a href="#14-demonstration-and-handover">Demonstration and handover</a></li><li><a href="#15-source-reference-and-glossary">Source reference and glossary</a></li></ol>
+<h2 id="1-project-background-and-objectives">1 Project background and objectives</h2>
+<h3 id="problem-statement">Problem statement</h3>
+<p>Tabular data often contains missing values, repeated records, inconsistent types, and unusual observations. These problems can distort charts and model evaluation. A user may also need several independent tools to clean the data, explore relationships, train models, and prepare a report. Repeating these steps manually makes it harder to preserve the relationship between a dataset, its transformations, and the resulting analysis.</p>
+<p>DataViz Pro provides a shared workflow for those tasks. It is intended for students, analysts, and small teams working with structured datasets. The interface exposes common operations while the service layer manages validation, analysis, and persistence.</p>
+<h3 id="objectives">Objectives</h3>
+<ul><li>Import supported files and data obtained from databases or REST APIs.</li><li>Describe dataset structure and identify quality issues before analysis.</li><li>Preview cleaning operations and save cleaned data as a separate version.</li><li>Create interactive charts with explicit column and aggregation choices.</li><li>Compare classification and regression models and explore clustering.</li><li>Explain supported saved models using feature importance and local explanations.</li><li>Generate downloadable reports from computed analysis results.</li><li>Associate datasets, models, and saved charts with individual user accounts.</li></ul>
+<h3 id="project-contribution">Project contribution</h3>
+<p>The main contribution is the integration of data preparation, analysis, model comparison, explanation, and reporting in a browser interface. The project reuses established statistical methods and machine learning libraries; it does not introduce a new learning algorithm. Its academic value can be evaluated through workflow design, modular implementation, validation, reproducibility, and the quality of its experiments.</p>
+<h2 id="2-scope-and-requirements">2 Scope and requirements</h2>
+<h3 id="supported-scope">Supported scope</h3>
+<p>The application works with structured data that can be represented as a pandas DataFrame. It accepts CSV, XLSX, XLS, JSON, and Parquet extensions. XLS and Parquet require compatible reader packages in addition to the main requirements. Database connector modules cover SQLite, PostgreSQL, and MySQL, and a REST connector supports importing API data.</p>
+<p>“Any data” should be understood as compatible structured data, not arbitrary images, audio, video, scanned documents, or every JSON structure. The suitability of a dataset for forecasting or machine learning also depends on its columns, sample size, and data quality.</p>
+<h3 id="actors">Actors</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Actor</th><th scope="col">Main responsibilities</th></tr></thead><tbody><tr><td>Visitor</td><td>View the landing page and access registration or sign-in</td></tr><tr><td>Registered user</td><td>Import and manage personal datasets, clean data, analyze, train models, create charts, and generate reports</td></tr><tr><td>Administrator</td><td>Manage account roles and activation status and inspect audit logs</td></tr><tr><td>External provider</td><td>Supply authorized database/API data or complete configured Google/GitHub sign-in</td></tr></tbody></table></div>
+<h3 id="functional-requirements">Functional requirements</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">ID</th><th scope="col">Requirement</th><th scope="col">Implementation reference</th></tr></thead><tbody><tr><td>FR01</td><td>Register users and authenticate browser sessions</td><td><code>app/routes/auth.py</code>, <code>app/auth_helpers.py</code></td></tr><tr><td>FR02</td><td>Import, preview, download, and delete datasets</td><td><code>app/routes/datasets.py</code></td></tr><tr><td>FR03</td><td>Produce quality summaries and descriptive analysis</td><td><code>app/services/analysis_service.py</code></td></tr><tr><td>FR04</td><td>Preview, apply, undo, reset, and save cleaning operations</td><td><code>app/services/cleaning_service.py</code></td></tr><tr><td>FR05</td><td>Build charts and save their configurations</td><td><code>app/routes/visualization.py</code></td></tr><tr><td>FR06</td><td>Configure, prepare, train, compare, and tune ML experiments</td><td><code>app/services/ml_service.py</code></td></tr><tr><td>FR07</td><td>Save and export supported supervised models</td><td><code>app/services/ml_service.py</code></td></tr><tr><td>FR08</td><td>Explain supported saved models and predictions</td><td><code>app/services/xai_service.py</code></td></tr><tr><td>FR09</td><td>Analyze a selected date column and numeric series</td><td><code>app/routes/timeseries.py</code></td></tr><tr><td>FR10</td><td>Produce automated trends, anomalies, and recommendations</td><td><code>app/routes/copilot.py</code>, <code>ai_engine/</code></td></tr><tr><td>FR11</td><td>Export analytical reports in multiple formats</td><td><code>app/services/report_service.py</code></td></tr><tr><td>FR12</td><td>Manage users and inspect audit records</td><td><code>app/routes/admin.py</code></td></tr></tbody></table></div>
+<p>These requirements describe code paths present in the application. They do not imply that every workflow has passed an acceptance test in the deployment environment.</p>
+<h3 id="nonfunctional-requirements">Nonfunctional requirements</h3>
+<p>The design aims to keep data associated with its owner, provide meaningful validation errors, separate web handling from analytical code, and preserve model configuration alongside results. Caches reduce repeated processing, and background threads allow the interface to poll for training progress. Deployment must provide writable storage and enough memory for the selected dataset and algorithms.</p>
+<p>No measured throughput, maximum concurrent-user count, uptime guarantee, or response-time benchmark is established here. These should be measured with representative datasets before making performance claims.</p>
+<h2 id="3-system-architecture">3 System architecture</h2>
+<h3 id="architectural-style">Architectural style</h3>
+<p>DataViz Pro is a modular monolith: one Flask application contains multiple functional modules. <code>run.py</code> creates the application through <code>app.create_app()</code>. The factory loads configuration, registers blueprints, initializes database tables, configures CSRF protection, and installs error handlers and response headers.</p>
+<p>The browser receives HTML rendered with Jinja templates. JavaScript requests analysis and workflow data from Flask endpoints and updates the interface. Plotly is loaded in the visualization workspace for interactive charts. Route handlers call application services, which coordinate the analytical modules and persistence layer.</p>
+<pre data-language="text"><code>Browser
+  HTML pages, CSS, JavaScript, interactive charts
+                        |
+Flask application factory and route blueprints
+  Authentication, dataset ownership checks, request validation
+                        |
+Application services
+  Datasets | Analysis | Cleaning | ML | XAI | Reports
+                        |
+Analytical modules
+  core | cleaner | ml | timeseries | nlg | ai_engine | connectors
+                        |
+Persistence
+  SQLAlchemy metadata database + dataset files + model/report files</code></pre>
+<h3 id="main-layers">Main layers</h3>
+<p>The route layer is responsible for HTTP input, authentication checks, responses, and template selection. Services implement operations that may be called by several routes. Domain objects represent configuration and results. Analytical modules perform the underlying transformations and computations. SQLAlchemy models and filesystem paths retain the results needed after an application restart.</p>
+<p>This separation makes it possible to test chart transformations or model-building logic without interacting with the complete interface. However, several workflows still keep their intermediate state in process memory, so the architecture is not yet a distributed worker system.</p>
+<h3 id="repository-organization">Repository organization</h3>
+<pre data-language="text"><code>Dataviz/
+  run.py                 Application entry point
+  config.py              Development, production, and testing configuration
+  requirements.txt       Application dependencies
+  app/
+    routes/              Flask page and JSON handlers
+    services/            Workflow orchestration
+    domain/              Dataset and ML workflow objects
+    core/                Cache infrastructure
+    templates/           Jinja HTML templates
+    static/              CSS, JavaScript, images, generated reports
+    oauth.py             Google and GitHub sign-in
+    security.py          Validation, rate limits, audit helpers, headers
+  auth/                  SQLAlchemy models and authentication services
+  cleaner/               Cleaning operations and pipeline history
+  connectors/            File, database, and API connectors
+  core/                  Data analysis and quality logic
+  ml/                    Model registry, comparison, tuning, and exports
+  timeseries/            Stationarity, seasonality, and forecasting
+  nlg/                   Natural-language insight generation
+  ai_engine/             Analytical insights and report generators
+  migrations/            Alembic migration configuration and revisions
+  scripts/               Administrative utilities
+  tests/                 Automated tests and fixtures
+  uploads/               Uploaded and derived dataset files
+  ml_models_storage/     Serialized model bundles
+  docs/                  Project documentation</code></pre>
+<h3 id="data-flow">Data flow</h3>
+<p>A typical workflow starts with an authenticated upload. The application validates the file, stores it, and creates a dataset record. Analysis services load that file into a DataFrame. Cleaning operates on a working copy; saving produces a child dataset with its own metadata. Charts and ML experiments then use the selected dataset version. A saved supervised model retains its estimator and preprocessor, while reports gather analysis outputs and generate downloadable files.</p>
+<p>The selected dataset version matters. Cleaning a working copy does not imply that every other module is using that unsaved copy. Users should save the cleaned version and select it explicitly for subsequent analysis or training.</p>
+<h2 id="4-database-and-file-storage">4 Database and file storage</h2>
+<h3 id="metadata-schema">Metadata schema</h3>
+<p>The database schema is defined in <code>auth/database.py</code>. SQLite is the default local database. SQLAlchemy creates an engine from <code>DATABASE_URL</code>; using another database requires its driver and compatibility testing. For SQLite connections, the code enables foreign keys, WAL mode, and a busy timeout.</p>
+<div class="table-scroll"><table><thead><tr><th scope="col">Table</th><th scope="col">Key fields</th><th scope="col">Purpose</th></tr></thead><tbody><tr><td><code>users</code></td><td><code>id</code>, unique <code>username</code>, unique <code>email</code>, <code>hashed_password</code>, <code>role</code>, <code>is_active</code></td><td>Identity, access role, and preferences</td></tr><tr><td><code>oauth_identities</code></td><td>Composite key <code>provider</code> and <code>subject</code>, <code>user_id</code></td><td>Stable external identity mapping</td></tr><tr><td><code>projects</code></td><td><code>id</code>, <code>user_id</code>, <code>project_name</code>, <code>dataset_path</code></td><td>Saved project metadata</td></tr><tr><td><code>datasets</code></td><td><code>id</code>, <code>user_id</code>, <code>storage_path</code>, <code>file_format</code>, <code>parent_dataset_id</code></td><td>File metadata, profile summaries, and version lineage</td></tr><tr><td><code>analyses</code></td><td><code>id</code>, <code>user_id</code>, nullable <code>project_id</code>, <code>summary_metrics</code>, <code>report_path</code></td><td>Recorded analysis summaries</td></tr><tr><td><code>ml_models</code></td><td><code>id</code>, <code>user_id</code>, nullable <code>dataset_id</code>, <code>algorithm</code>, <code>metrics</code>, <code>model_path</code>, <code>version</code></td><td>Saved model metadata and experiment details</td></tr><tr><td><code>saved_charts</code></td><td><code>id</code>, <code>user_id</code>, <code>dataset_id</code>, <code>chart_type</code>, <code>config</code></td><td>Reusable chart specifications</td></tr><tr><td><code>audit_logs</code></td><td><code>id</code>, nullable <code>user_id</code>, <code>action</code>, <code>resource_id</code>, <code>success</code></td><td>Recorded application and administrative events</td></tr><tr><td><code>login_attempts</code></td><td><code>id</code>, <code>identifier</code>, <code>ip_address</code>, <code>success</code>, <code>created_at</code></td><td>Sign-in attempt records</td></tr></tbody></table></div>
+<h3 id="relationships">Relationships</h3>
+<pre data-language="text"><code>User 1 ---- many Datasets
+User 1 ---- many Projects ---- many Analyses
+User 1 ---- many Models
+User 1 ---- many Saved Charts
+User 1 ---- many OAuth Identities
+
+Dataset 1 ---- many child Datasets through parent_dataset_id
+Dataset 1 ---- many Models
+Dataset 1 ---- many Saved Charts</code></pre>
+<p>Foreign-key actions vary by relationship. For example, deleting a dataset sets its related model&#x27;s dataset reference to null, while saved charts use a cascading database relationship. Physical file cleanup is a separate application responsibility; a database relationship alone does not remove files.</p>
+<h3 id="storage-conventions">Storage conventions</h3>
+<p>Uploads are stored under the configured upload directory, with user-specific paths. Dataset records store their actual file paths. Cleaned dataset versions retain a parent reference and serialized cleaning information. ML Studio writes supervised model bundles to <code>ml_models_storage/</code> using joblib. Each bundle includes the model, preprocessing object, feature columns, target metadata, and metrics.</p>
+<p>The report service currently writes into <code>app/static/reports/&lt;user_id&gt;/</code>. Although <code>config.py</code> defines <code>REPORTS_FOLDER</code>, that setting does not control the report service&#x27;s active output path. This difference matters for backups, permissions, and deployment security.</p>
+<h3 id="persistent-and-temporary-state">Persistent and temporary state</h3>
+<p>Database rows and saved files persist across restarts. Cleaning sessions, ML workflow state, background-job status, and caches are held in application memory. A restart can therefore discard unsaved changes or running-job information even when uploaded data and saved models remain available.</p>
+<h2 id="5-functional-modules">5 Functional modules</h2>
+<h3 id="authentication-and-administration">Authentication and administration</h3>
+<p>Users register and sign in through Flask routes. Passwords are hashed with bcrypt. Browser authentication uses Flask sessions; JWT helpers exist in the repository but are not the principal browser sign-in mechanism. Without an additional session backend, Flask&#x27;s default session is a signed client-side cookie, not a server-side session store.</p>
+<p>Google and GitHub sign-in are implemented through Authlib and require configured provider credentials. The identity table associates provider subjects with local accounts. The implementation requires verified email information and does not silently attach a new provider identity to an existing account with the same email address.</p>
+<p>Administrators have routes for listing users, changing roles, enabling or disabling accounts, and viewing audit logs. The explicit <code>scripts/configure_admin.py</code> utility creates or resets an administrator when an operator runs it.</p>
+<h3 id="dataset-management">Dataset management</h3>
+<p>The dataset workflow validates the file extension, upload size, and selected binary signatures before parsing. Metadata includes dimensions, file format, column information, and quality summaries. Users can list, preview, rename or describe, download, and delete their datasets.</p>
+<p>The default request-size limit is 52,428,800 bytes, approximately 50 MiB. This is an upload limit, not a promise that every accepted dataset can be processed efficiently. Memory use may exceed the original file size once pandas loads and copies the data.</p>
+<h3 id="exploratory-analysis">Exploratory analysis</h3>
+<p>Analysis views cover an overview, data quality, descriptive statistics, correlations, distributions, outliers, categorical columns, time-oriented summaries, and narrative insights. The analysis loader checks dataset ownership before reading a stored file.</p>
+<p>Many analysis operations sample datasets above 50,000 rows using a fixed random seed of 42. The preview constant is 100 rows. Consequently, a statistic in an analysis or report can describe a sample rather than the entire uploaded dataset. This distinction should be stated when presenting conclusions.</p>
+<h3 id="cleaning-and-preparation">Cleaning and preparation</h3>
+<p>The cleaning service wraps operations for duplicate removal, missing-value treatment, outlier handling, categorical encoding, and scaling. It also supports column renaming, selection or removal, type conversion, constant-column removal, and selected transformations.</p>
+<p>The working pipeline retains an audit history and intermediate DataFrame states for undo and reset. Users can preview an operation, apply it, inspect the changed dimensions or missing-value counts, and save a new version. The original dataset remains a separate record.</p>
+<p>Cleaning decisions must follow the meaning of the data. An unusual transaction is not automatically erroneous, and replacing a missing value with an average is not appropriate for every column. Previewing changes provides an opportunity to review their effect before saving.</p>
+<h3 id="visualization">Visualization</h3>
+<p>The chart service supports bar, line, scatter, pie, histogram, box, violin, heatmap, correlation, and treemap data. Aggregations include count, sum, mean, minimum, and maximum where the chart type supports them. It validates column choices and numeric requirements, handles nonfinite values for JSON output, and sorts line-chart data by its X column.</p>
+<p>Chart configurations can be saved with a dataset reference. Saving a chart retains its configuration; it should not be described as creating a complete dashboard from a natural-language prompt.</p>
+<h3 id="automated-insights">Automated insights</h3>
+<p>The active Copilot route invokes <code>AIEngine.run_full_ai_analysis()</code> and returns trends, anomalies, candidate root causes, and recommendations. These outputs come from statistical and rule-based analysis. A label such as “root cause” should be interpreted as a suggested association or segment difference to investigate, not proof of causation.</p>
+<p>The separate <code>app/services/copilot_service.py</code> contains a syntax error and is not imported by the active Copilot route. Its conversational features must not be presented as a functioning chat API. Setting <code>OPENAI_API_KEY</code> alone does not establish a working conversational integration.</p>
+<h3 id="time-series">Time series</h3>
+<p>Users select a date column and a numeric value column. The route converts values, removes invalid date/value rows, sorts observations by date, and requires at least three valid rows. Individual analyses can still need substantially more observations.</p>
+<p>The analyzer uses an augmented Dickey-Fuller test for stationarity and seasonal decomposition when enough data supports a detected period. Forecasting uses Prophet and requests 30 future periods. Prophet is optional and is not listed in the main requirements file. Insufficient observations, constant values, or missing packages may make a particular output unavailable without invalidating all other results.</p>
+<h3 id="reports">Reports</h3>
+<p>The report service gathers dataset information, quality results, statistics, correlations, distributions, outliers, saved-model information, and narrative insights. The public generation route accepts <code>pdf</code>, <code>html</code>, <code>pptx</code>, <code>excel</code>, <code>word</code>, <code>executive</code>, and <code>markdown</code>. Word and Excel produce DOCX and XLSX files respectively; <code>executive</code> selects an executive PDF report.</p>
+<p>Reports are summaries of available analysis. A generated report does not establish model accuracy independently or guarantee that every optional explanation succeeded. Users should review the selected data, warnings, and reported sample size before sharing it.</p>
+<h2 id="6-machine-learning-methodology">6 Machine learning methodology</h2>
+<h3 id="workflow">Workflow</h3>
+<p>The supervised workflow is configure, prepare, train, review, optionally optimize, then save. Users select a target, features, task type, preprocessing choices, and evaluation settings. Preparation validates the target and split size. Training runs in a thread pool, with a job identifier that the interface polls for progress.</p>
+<p>The service splits supervised data before fitting its preprocessor. It fits preprocessing on training data and transforms the test data using that fitted object. This protects the holdout set from direct preprocessing leakage. Cross-validation should also preserve fold-level preprocessing isolation; the presence of a holdout split alone is not proof that every evaluation path is leakage-free.</p>
+<h3 id="algorithms">Algorithms</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Task</th><th scope="col">Examples in the registry</th><th scope="col">Important restriction</th></tr></thead><tbody><tr><td>Classification</td><td>Logistic Regression, Random Forest, Decision Tree, Extra Trees, Gradient Boosting, Naive Bayes, KNN, SVM</td><td>Fast mode exposes a different selection; suitability depends on the data</td></tr><tr><td>Regression</td><td>Linear Regression, Ridge, Random Forest, Decision Tree, Extra Trees, Gradient Boosting, KNN, Lasso, Elastic Net, SVR</td><td>Some choices are excluded in fast mode</td></tr><tr><td>Clustering</td><td>K-Means, DBSCAN, Agglomerative, Mini-Batch K-Means, Birch</td><td>ML Studio currently rejects saving clustering models</td></tr><tr><td>Optional boosting</td><td>XGBoost and LightGBM integration code</td><td>Availability flags are explicitly false in the current registry</td></tr></tbody></table></div>
+<p>The registry comments cite Windows OpenMP crashes as the reason for disabling XGBoost and LightGBM. Installing their packages does not automatically enable them in the application.</p>
+<h3 id="evaluation">Evaluation</h3>
+<p>Classification results may include accuracy, precision, recall, F1, ROC AUC, and a confusion matrix where applicable. Regression results use measures such as R-squared, mean absolute error, and root mean squared error. Clustering uses internal measures such as silhouette, Calinski-Harabasz, and Davies-Bouldin scores when their mathematical requirements are met.</p>
+<p>Accuracy alone can be misleading for an imbalanced classification problem. Error metrics should be interpreted in the units of the target variable. A high clustering score does not demonstrate that clusters correspond to meaningful real-world categories. No universal accuracy claim can be made without a defined dataset, split, baseline, and evaluation method.</p>
+<h3 id="model-persistence-and-explanations">Model persistence and explanations</h3>
+<p>Saving a supervised model creates a versioned database record and a joblib bundle with its preprocessor and feature metadata. Prediction must use the same feature definitions and preprocessing as training. The service marks older active versions of the same algorithm and dataset inactive when a new version is saved.</p>
+<p>The explainability service includes native feature importance, permutation importance, global and local SHAP outputs, LIME explanations, and prediction explanations. Availability depends on the estimator, stored data, and installed libraries. Feature attribution describes a model&#x27;s behavior; it does not establish causal effects in the underlying domain.</p>
+<h3 id="recommended-experimental-protocol">Recommended experimental protocol</h3>
+<p>For an FYP evaluation, choose a documented dataset, define a target and baseline, record the dataset version, and preserve the random seed and split configuration. Compare several suitable models using the same evaluation protocol. Include an error analysis and explain at least one successful and one incorrect prediction. Record failures and unavailable explanations alongside successful results rather than omitting them.</p>
+<h2 id="7-interface-and-api-reference">7 Interface and API reference</h2>
+<h3 id="browser-pages">Browser pages</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Path</th><th scope="col">Purpose</th></tr></thead><tbody><tr><td><code>/</code></td><td>Landing page</td></tr><tr><td><code>/login</code> and <code>/signup</code></td><td>Authentication</td></tr><tr><td><code>/dashboard</code></td><td>User overview</td></tr><tr><td><code>/datasets</code> and <code>/datasets/upload</code></td><td>Dataset management and import</td></tr><tr><td><code>/analysis/&lt;dataset_id&gt;/overview</code></td><td>Start dataset analysis</td></tr><tr><td><code>/datasets/&lt;dataset_id&gt;/clean</code></td><td>Cleaning workspace</td></tr><tr><td><code>/visualization/&lt;dataset_id&gt;/workspace</code></td><td>Chart builder</td></tr><tr><td><code>/datasets/&lt;dataset_id&gt;/ml</code></td><td>ML Studio</td></tr><tr><td><code>/models</code></td><td>Saved supervised models</td></tr><tr><td><code>/models/&lt;model_id&gt;/explain</code></td><td>Explainability workspace</td></tr><tr><td><code>/time-series/&lt;dataset_id&gt;/workspace</code></td><td>Time series workspace</td></tr><tr><td><code>/copilot/&lt;dataset_id&gt;/workspace</code></td><td>Automated insights</td></tr><tr><td><code>/reports/&lt;dataset_id&gt;/workspace</code></td><td>Report builder</td></tr><tr><td><code>/admin/users</code></td><td>Administrator user management</td></tr></tbody></table></div>
+<p>Angle-bracket identifiers represent the corresponding numeric database ID. These are browser routes within the same Flask application, not separate microservices.</p>
+<h3 id="representative-json-endpoints">Representative JSON endpoints</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Method</th><th scope="col">Path</th><th scope="col">Operation</th></tr></thead><tbody><tr><td>GET</td><td><code>/health</code></td><td>Application name, version, and basic status</td></tr><tr><td>GET</td><td><code>/api/datasets</code></td><td>List accessible datasets</td></tr><tr><td>GET</td><td><code>/api/datasets/&lt;id&gt;</code></td><td>Dataset detail</td></tr><tr><td>DELETE</td><td><code>/api/datasets/&lt;id&gt;</code></td><td>Delete a dataset</td></tr><tr><td>GET</td><td><code>/analysis/api/&lt;id&gt;/overview</code></td><td>Analysis overview</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/clean/preview</code></td><td>Preview a cleaning operation</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/clean/apply</code></td><td>Apply a cleaning operation</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/clean/save</code></td><td>Persist the cleaned version</td></tr><tr><td>GET</td><td><code>/visualization/api/&lt;id&gt;/data</code></td><td>Prepare chart data</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/ml/configure</code></td><td>Store ML workflow configuration</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/ml/prepare</code></td><td>Prepare the selected experiment</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/ml/train</code></td><td>Start a training job</td></tr><tr><td>GET</td><td><code>/api/datasets/&lt;id&gt;/ml/train/status/&lt;job_id&gt;</code></td><td>Poll training status</td></tr><tr><td>GET</td><td><code>/api/datasets/&lt;id&gt;/ml/results</code></td><td>Retrieve experiment results</td></tr><tr><td>POST</td><td><code>/api/datasets/&lt;id&gt;/ml/save</code></td><td>Save a supervised model</td></tr><tr><td>GET</td><td><code>/api/models/&lt;id&gt;/download</code></td><td>Download a saved model bundle</td></tr><tr><td>GET</td><td><code>/api/xai/models/&lt;id&gt;/global/feature-importance</code></td><td>Global importance data</td></tr><tr><td>POST</td><td><code>/time-series/api/&lt;id&gt;/analyze</code></td><td>Analyze selected time series columns</td></tr><tr><td>GET</td><td><code>/copilot/api/&lt;id&gt;/insights</code></td><td>Generate automated analytical insights</td></tr><tr><td>POST</td><td><code>/reports/api/&lt;id&gt;/generate</code></td><td>Generate a report</td></tr></tbody></table></div>
+<p>This is a selected reference, not a complete OpenAPI specification. Route prefixes are not uniform: several feature APIs sit under their module prefix rather than beginning with <code>/api/</code>.</p>
+<h3 id="authentication-and-error-behavior">Authentication and error behavior</h3>
+<p>The browser&#x27;s authenticated session is required for protected workflows. State-changing requests must also satisfy Flask-WTF CSRF validation; JSON calls from the interface should send the CSRF token, commonly through <code>X-CSRFToken</code>. A raw API request without a browser session is not automatically authenticated by supplying a JWT from the legacy helper module.</p>
+<p>Response shapes differ by route. Many handlers return an <code>error</code> field with a 400 or 404 status. Authentication can redirect to the login page, and some framework errors return HTML. Clients should inspect both the status and content type before attempting JSON parsing. The <code>/health</code> response is a basic application response, not a deep database or model-service readiness check.</p>
+<h3 id="cleaning-request-example">Cleaning request example</h3>
+<p>For an authenticated session, the following JSON previews removal of duplicate rows while keeping the first occurrence:</p>
+<pre data-language="http"><code>POST /api/datasets/12/clean/preview
+Content-Type: application/json
+X-CSRFToken: &lt;token from the current page&gt;
+
+{
+  &quot;type&quot;: &quot;remove_duplicates&quot;,
+  &quot;keep&quot;: &quot;first&quot;
+}</code></pre>
+<p>Replace <code>12</code> with a dataset owned by the current account. Previewing does not save a new dataset. Applying the operation and saving the resulting version are separate requests.</p>
+<h3 id="report-request-example">Report request example</h3>
+<pre data-language="http"><code>POST /reports/api/12/generate
+Content-Type: application/json
+X-CSRFToken: &lt;token from the current page&gt;
+
+{
+  &quot;format&quot;: &quot;word&quot;
+}</code></pre>
+<p>A successful response contains <code>success</code>, <code>filename</code>, <code>format</code>, and <code>download_url</code>. The exact filename is generated from the dataset and selected output. Follow the returned download URL using the same authenticated session.</p>
+<h3 id="time-series-request-example">Time series request example</h3>
+<pre data-language="json"><code>{
+  &quot;date_col&quot;: &quot;date&quot;,
+  &quot;val_col&quot;: &quot;sales&quot;
+}</code></pre>
+<p>Send this body to <code>POST /time-series/api/&lt;id&gt;/analyze</code> only when those columns exist in the selected dataset. The response can contain successful stationarity or raw-series data alongside an unavailable forecast.</p>
+<h2 id="8-installation-and-configuration">8 Installation and configuration</h2>
+<h3 id="environment-requirements">Environment requirements</h3>
+<p>Use a Python environment compatible with the application dependencies. The source uses syntax requiring Python 3.10 or newer, and the Dockerfile starts from Python 3.11. A current browser, writable local storage, and internet access for installing packages are needed. External providers and CDN-loaded chart assets require network access when used.</p>
+<p>For a small demonstration, 8 GB RAM is a practical starting recommendation and 16 GB provides more room for model training. These are planning suggestions, not benchmarked minimum requirements. Large datasets, wide one-hot encodings, and expensive explanations can require more memory.</p>
+<h3 id="windows-local-setup">Windows local setup</h3>
+<p>Open PowerShell in the project directory. The following commands create an isolated environment and install the declared dependencies:</p>
+<pre data-language="powershell"><code>cd D:\Dataviz
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt</code></pre>
+<p>If <code>.venv</code> already contains the working project environment, use it rather than recreating it. There is no need to activate the environment when calling its Python executable directly.</p>
+<p>Create a local <code>.env</code> from <code>.env.example</code> if one does not already exist. Preserve existing credentials and configuration. Set a stable random <code>SECRET_KEY</code> and a suitable database URL. For example, a local SQLite database in this workspace can use <code>sqlite:///D:/Dataviz/dataviz_pro.db</code>. Do not publish the real <code>.env</code> file.</p>
+<p>A secret can be generated locally with:</p>
+<pre data-language="powershell"><code>.\.venv\Scripts\python.exe -c &quot;import secrets; print(secrets.token_hex(32))&quot;</code></pre>
+<p>Paste the generated value into the local configuration. Treat it as a secret, not as material for a report or screenshot.</p>
+<h3 id="configuration-reference">Configuration reference</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Variable or setting</th><th scope="col">Role and current behavior</th></tr></thead><tbody><tr><td><code>SECRET_KEY</code></td><td>Signs Flask sessions and supports CSRF; a random runtime fallback is used if absent</td></tr><tr><td><code>DATABASE_URL</code></td><td>SQLAlchemy connection URL; defaults to local SQLite</td></tr><tr><td><code>MAX_CONTENT_LENGTH</code></td><td>Default 52,428,800-byte upload request limit</td></tr><tr><td><code>APP_BASE_URL</code></td><td>Application metadata/base URL setting; does not change <code>run.py</code> host or port</td></tr><tr><td><code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code></td><td>Optional Google sign-in credentials</td></tr><tr><td><code>GITHUB_CLIENT_ID</code>, <code>GITHUB_CLIENT_SECRET</code></td><td>Optional GitHub sign-in credentials</td></tr><tr><td><code>OPENAI_API_KEY</code></td><td>Present in configuration; not sufficient to enable a working conversational service</td></tr><tr><td><code>DEBUG</code></td><td>Read by the base class; development and production subclasses explicitly override it</td></tr><tr><td><code>SESSION_LIFETIME</code></td><td>Read in base configuration, but the factory sets the session lifetime to 24 hours</td></tr></tbody></table></div>
+<p><code>config.py</code> loads the project <code>.env</code> with <code>override=True</code>, so that file can override existing process environment variables. <code>FLASK_ENV</code>, <code>FLASK_HOST</code>, and <code>FLASK_PORT</code> in the example file do not select the factory configuration or override the explicit host and port in <code>run.py</code>.</p>
+<h3 id="starting-the-application">Starting the application</h3>
+<pre data-language="powershell"><code>.\.venv\Scripts\python.exe run.py</code></pre>
+<p>Open <code>http://127.0.0.1:5000</code> in the browser. The entry point binds to <code>0.0.0.0:5000</code> and uses the default development configuration. Run it only in a trusted development environment. Application initialization attempts to create the database tables; if initialization fails, inspect the startup warning and database permissions before continuing.</p>
+<p>The old root README includes Streamlit and FastAPI commands that do not represent this entry point. Use the Flask commands in this section for the current codebase.</p>
+<h3 id="optional-capabilities">Optional capabilities</h3>
+<pre data-language="powershell"><code>.\.venv\Scripts\python.exe -m pip install prophet
+.\.venv\Scripts\python.exe -m pip install xlrd pyarrow
+.\.venv\Scripts\python.exe -m pip install pytest</code></pre>
+<p>Prophet enables the implemented forecasting path. <code>xlrd</code> supports legacy XLS reading, and <code>pyarrow</code> supplies a Parquet engine. Pytest is needed for the test command but is not in the application requirements. Installing these packages does not fix unrelated application errors or enable algorithms that are explicitly disabled in code.</p>
+<h3 id="social-sign-in-and-administrator-setup">Social sign-in and administrator setup</h3>
+<p>Configure the optional provider credentials, register the correct callback URLs, and restart the application. For local use with <code>127.0.0.1</code>, the callbacks are:</p>
+<pre data-language="text"><code>http://127.0.0.1:5000/auth/google/callback
+http://127.0.0.1:5000/auth/github/callback</code></pre>
+<p>Use the same browser hostname as the registered callback. The repository&#x27;s <code>docs/oauth.md</code> provides the provider-specific setup notes. To explicitly create or reset an administrator, run:</p>
+<pre data-language="powershell"><code>.\.venv\Scripts\python.exe scripts\configure_admin.py</code></pre>
+<p>Enter the administrator password when prompted. This changes the administrator account and should be performed by the project operator, not by every user.</p>
+<h3 id="deployment-guidance">Deployment guidance</h3>
+<p>Use an explicit production factory configuration for deployment. On a Linux host with Gunicorn installed, a starting command is:</p>
+<pre data-language="sh"><code>gunicorn -w 1 -b 127.0.0.1:5000 --timeout 120 &quot;app:create_app(&#x27;production&#x27;)&quot;</code></pre>
+<p>Place the service behind an HTTPS reverse proxy. Production enables secure session cookies, so the browser connection must use HTTPS. The single worker is a conservative starting point because ML and cleaning state are currently process-local. It is not a performance recommendation based on load testing.</p>
+<p>The supplied Dockerfile launches four workers with <code>create_app()</code> and therefore the default development configuration. It also switches to a non-root user without an explicit ownership adjustment for application storage. Review its command and writable-volume permissions before deploying it. Do not treat the current image as a verified production deployment.</p>
+<p>Alembic files are available, but startup also contains schema initialization logic. Back up an existing database and reconcile its schema with the migration history before applying migrations; do not run migrations blindly against a valuable database.</p>
+<h2 id="9-user-guide">9 User guide</h2>
+<h3 id="import-and-inspect-a-dataset">Import and inspect a dataset</h3>
+<ol><li>Sign in or create an account.</li><li>Open Datasets and select the upload/import action.</li><li>Choose a supported file, or provide authorized database/API connection information.</li><li>Review the dataset preview, column types, and row and column counts.</li><li>Open the analysis overview and quality views to identify missing values, duplicates, or suspicious fields.</li></ol>
+<p>A successful upload confirms that the parser accepted the input. It does not establish that the values are correct or suitable for every analysis.</p>
+<h3 id="prepare-a-cleaned-version">Prepare a cleaned version</h3>
+<ol><li>Open the dataset&#x27;s cleaning workspace.</li><li>Inspect detected issues before choosing an operation.</li><li>Preview the operation and compare its effect with the original data.</li><li>Apply it if the result is appropriate; use undo or reset when necessary.</li><li>Save the result as a new dataset version.</li><li>Select that saved version for charts, training, or reports.</li></ol>
+<p>Retain a short explanation for major cleaning choices, especially removed rows and imputed target-related values. Avoid using information from a future test period when preparing forecasting experiments.</p>
+<h3 id="create-and-save-a-chart">Create and save a chart</h3>
+<p>Open Visualization, select the dataset, and choose a chart type. Assign X, Y, and any required Z column. Use an aggregation when several records represent the same category. For example, a sales-by-region bar chart normally sums a numeric sales column by region rather than plotting every transaction separately. Review missing labels and totals, then save the chart configuration if it will be reused.</p>
+<h3 id="train-and-explain-a-model">Train and explain a model</h3>
+<p>Choose the saved dataset version and enter ML Studio. Select classification or regression, define the target, and exclude target-derived or future-information columns from the features. Configure the split and preprocessing, prepare the data, and run training. Inspect the comparison results and any algorithm failures before choosing a model.</p>
+<p>Save a supported supervised model, then open its explanation workspace. Compare global importance with a local explanation for a selected record. Interpret the explanation together with prediction error and data quality; a plausible explanation does not guarantee a correct model.</p>
+<p>Clustering is available for exploratory grouping, but the current save operation rejects clustering results. Plan the demonstration accordingly.</p>
+<h3 id="analyze-a-time-series-and-export-findings">Analyze a time series and export findings</h3>
+<p>Select a date column and numeric value in Time Series. Check that dates represent a meaningful sequence and that enough observations remain after conversion. Review stationarity, seasonal output, and forecasting availability separately. Generate a report from the report builder, select the desired format, and inspect the downloaded file before sharing it.</p>
+<h3 id="common-problems">Common problems</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Symptom</th><th scope="col">Likely explanation</th><th scope="col">Suggested response</th></tr></thead><tbody><tr><td>XLS or Parquet cannot be read</td><td>Missing format engine or invalid file</td><td>Install the compatible engine or export a valid CSV/XLSX</td></tr><tr><td>Upload is rejected as too large</td><td>Request exceeds configured limit</td><td>Use a smaller dataset or deliberately adjust the limit and memory budget</td></tr><tr><td>CSRF validation fails</td><td>Missing/stale token or changed session secret</td><td>Reload the form and sign in again; keep a stable secret</td></tr><tr><td>Training state disappears</td><td>Application restart or request reaches another worker</td><td>Reconfigure the experiment; use one worker until shared state is implemented</td></tr><tr><td>Forecast is unavailable</td><td>Prophet missing or data unsuitable</td><td>Install Prophet if needed and review the date/value series</td></tr><tr><td>Social login is unavailable</td><td>Provider credentials or callback mismatch</td><td>Check the local provider configuration and hostname</td></tr><tr><td>Analysis count differs from upload count</td><td>Analysis sampling or filtered time series rows</td><td>Identify the population used by that output before interpreting it</td></tr><tr><td>Model save fails</td><td>Unsupported clustering or persistence constraints</td><td>Read the returned error and review the limitations below</td></tr></tbody></table></div>
+<h2 id="10-security-and-operational-considerations">10 Security and operational considerations</h2>
+<h3 id="existing-controls">Existing controls</h3>
+<p>The application includes password hashing, CSRF protection, session cookie settings, role checks, dataset ownership checks, upload validation, rate-limit helpers, security headers, and audit logging. API import URL validation rejects localhost and private/internal addresses. Database import validation restricts accepted query forms. These controls reduce specific risks but do not constitute a complete security audit.</p>
+<p>Use database credentials that have only the permissions needed for import. Query text validation is not a substitute for a read-only database account. Store provider credentials in local configuration rather than source control or screenshots.</p>
+<h3 id="report-storage-exposure">Report storage exposure</h3>
+<p>Generated reports are written beneath Flask&#x27;s static directory. Standard static serving can expose those files independently of the authenticated download route if their paths are known. Before hosting sensitive data, move report storage outside the public static tree and serve files through an ownership-checked route. Merely adding a user ID to a directory name is not access control.</p>
+<h3 id="session-and-worker-behavior">Session and worker behavior</h3>
+<p>A stable secret is necessary across restarts and processes. Process-local rate limits, caches, and workflow state are not shared automatically between multiple workers. Production scaling requires a shared store and a persistent job system, plus authorization checks for each job lookup. Deploying more workers without these changes can create inconsistent workflow behavior.</p>
+<h3 id="backup-and-recovery">Backup and recovery</h3>
+<p>Back up the metadata database together with uploaded datasets, saved model bundles, and generated reports. A metadata-only backup can leave records pointing to missing files. Use a consistent database backup method; copying a live SQLite file without accounting for its WAL state may produce an incomplete backup. Test recovery in a separate environment and protect secrets independently.</p>
+<p>Only load trusted serialized model bundles. Joblib/pickle model files can execute code when deserialized and should not be treated as ordinary untrusted uploads.</p>
+<h2 id="11-testing-and-evaluation">11 Testing and evaluation</h2>
+<h3 id="verification-performed-for-this-documentation">Verification performed for this documentation</h3>
+<p>On 19 September 2026, a static syntax check parsed Python files under the application, analytical modules, authentication, migrations, tests, and scripts, plus <code>run.py</code> and <code>config.py</code>. It checked 140 files: 139 parsed successfully and one failed. The failure is <code>app/services/copilot_service.py</code>, where the parser reported an unterminated string literal at line 87.</p>
+<p>The same inspection found 160 test functions or methods in the <code>tests/</code> directory. This is a source inventory, not a count of collected or passed test cases. Parameterization and test discovery can change the executed count. The application test suite, browser workflows, external provider sign-in, and deployment were not executed as part of this documentation task. No pass percentage or model-performance result is asserted.</p>
+<h3 id="existing-test-areas">Existing test areas</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Area</th><th scope="col">Representative test files</th></tr></thead><tbody><tr><td>Accounts and social sign-in</td><td><code>test_auth.py</code>, <code>test_auth_service.py</code>, <code>test_social_auth.py</code></td></tr><tr><td>Dataset and analysis workflows</td><td><code>test_datasets.py</code>, <code>test_analysis.py</code></td></tr><tr><td>Cleaning</td><td><code>test_cleaning.py</code>, <code>test_cleaner.py</code></td></tr><tr><td>Charts</td><td><code>test_chart_service.py</code></td></tr><tr><td>Machine learning</td><td><code>test_ml.py</code>, <code>test_automl_pipeline.py</code>, <code>test_ml_studio_workflows.py</code></td></tr><tr><td>Explainability</td><td><code>test_xai.py</code></td></tr><tr><td>Copilot and time series</td><td><code>test_copilot.py</code>, <code>test_timeseries_json.py</code></td></tr><tr><td>Reports</td><td><code>test_reporting.py</code>, <code>test_report_service_contracts.py</code></td></tr><tr><td>Security and API behavior</td><td><code>test_security.py</code>, <code>test_phase14_security.py</code>, <code>test_api_consistency.py</code></td></tr><tr><td>Appearance</td><td><code>test_theme.py</code></td></tr></tbody></table></div>
+<h3 id="running-automated-tests-safely">Running automated tests safely</h3>
+<p>Use a disposable project copy with a separate SQLite database and storage directories. The shared test fixture sets a database URL before importing the app, but <code>config.py</code> loads <code>.env</code> with override enabled. A copied real <code>.env</code> can therefore redirect tests to an unintended database. Configure an isolated test environment and verify the effective database target before running tests.</p>
+<pre data-language="powershell"><code>.\.venv\Scripts\python.exe -m pytest tests -q</code></pre>
+<p>Run this command only from the isolated test copy. Record the actual collected, passed, skipped, and failed counts with the date and environment. Do not report the source inventory above as a successful test run.</p>
+<h3 id="acceptance-test-plan">Acceptance test plan</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">ID</th><th scope="col">Scenario</th><th scope="col">Expected outcome</th></tr></thead><tbody><tr><td>AT01</td><td>Register, sign in, and sign out</td><td>Correct account/session transitions and protected-page behavior</td></tr><tr><td>AT02</td><td>Upload a valid CSV and inspect it</td><td>Stored dataset with accurate dimensions and a readable preview</td></tr><tr><td>AT03</td><td>Upload an unsupported or oversized file</td><td>Clear rejection without a usable invalid dataset record</td></tr><tr><td>AT04</td><td>Access another user&#x27;s dataset ID</td><td>Access denied or resource not found</td></tr><tr><td>AT05</td><td>Preview, apply, undo, and save cleaning</td><td>Correct row/value changes and a separate saved version</td></tr><tr><td>AT06</td><td>Create a grouped bar chart</td><td>Aggregated totals agree with an independently computed result</td></tr><tr><td>AT07</td><td>Train and save a regression/classification model</td><td>Real metrics, valid persisted bundle, and reproducible prediction input</td></tr><tr><td>AT08</td><td>Request explanations for a supported model</td><td>Valid output or a clear capability/dependency error</td></tr><tr><td>AT09</td><td>Analyze a short or invalid time series</td><td>Clear validation or partial-analysis errors</td></tr><tr><td>AT10</td><td>Export a report</td><td>File opens and reflects the selected dataset and available results</td></tr><tr><td>AT11</td><td>Call a protected mutation without a valid CSRF token</td><td>Request rejected</td></tr><tr><td>AT12</td><td>Use an administrator-only route as a normal user</td><td>Administrative action refused</td></tr></tbody></table></div>
+<p>These are proposed acceptance tests, not recorded passes. For each execution, record input, actual output, status, and evidence. Include representative failures and boundary conditions.</p>
+<h2 id="12-known-limitations">12 Known limitations</h2>
+<h3 id="incomplete-or-conditional-features">Incomplete or conditional features</h3>
+<ul><li>The standalone conversational Copilot service fails syntax parsing. The active Copilot route uses the analytical engine directly and does not provide the claimed full conversation workflow.</li><li>A prompt-to-dashboard generation route is not present in the inspected route set. Saved chart configurations and the user dashboard are separate implemented features.</li><li>XGBoost and LightGBM are deliberately disabled in the model registry despite appearing in the dependencies.</li><li>Clustering model persistence is rejected by ML Studio&#x27;s save method.</li><li>Prophet forecasting requires an optional package that is absent from <code>requirements.txt</code>; XLS and Parquet readers also need compatible engines.</li></ul>
+<h3 id="data-and-evaluation-limitations">Data and evaluation limitations</h3>
+<p>Large-data analysis is capped by sampling in many service methods. Time-series validity depends on dates, ordering, frequency, and sufficient history. Model explanations are conditional on estimator support and the stored training context. Generated recommendations should be reviewed by someone who understands the domain.</p>
+<p>The <code>ml_models</code> schema constrains <code>primary_score</code> to the interval from zero to one and <code>cv_score</code> to nonnegative values. Some valid regression scores can be negative, and error metrics can exceed one. These constraints can reject legitimate experiment results and should be reviewed before broad model benchmarking.</p>
+<h3 id="operational-limitations">Operational limitations</h3>
+<p>Workflows and jobs depend on process memory, while the Docker example starts several processes. Report files reside in a publicly served directory. The default factory configuration is development, and several example environment variables do not control the entry point as their names might suggest. These are specific release-readiness issues, not proof that every local workflow fails.</p>
+<p>The root README describes a previous stack and should be updated separately. Dependency versions use broad lower bounds rather than a fully locked environment. Reproducible installation and production readiness require additional validation.</p>
+<h2 id="13-future-development">13 Future development</h2>
+<p>The first priority is to make the documented feature set dependable: repair or remove the unused conversational service, align the README with Flask, correct score constraints, and complete isolated acceptance testing. Move report output outside static storage and verify authorization for downloads and background-job status.</p>
+<p>For larger deployments, move job execution and workflow state to durable shared services, add structured job ownership, and measure memory and latency under realistic load. Add explicit sampling information to analysis and report outputs so readers can distinguish sample statistics from full-data counts.</p>
+<p>Later enhancements can include tested conversational analysis, prompt-based dashboard creation, persistent clustering workflows, a consistent versioned API, locked dependency versions, and a release pipeline with regression tests. These are proposed improvements, not current capabilities.</p>
+<h2 id="14-demonstration-and-handover">14 Demonstration and handover</h2>
+<h3 id="suggested-fyp-demonstration">Suggested FYP demonstration</h3>
+<p>Use a small, non-sensitive dataset with documented columns and a clear question. Demonstrate import and quality inspection, then one justified cleaning operation and a saved version. Create a chart that answers the question. Train two suitable supervised algorithms with the same split, compare their actual results, and save one model. Explain a prediction and export a report.</p>
+<p>If forecasting is included, install and verify Prophet beforehand and use a dataset with meaningful time history. Demonstrate the active Copilot as automated insights. Do not depend on the broken conversational service, disabled boosting algorithms, or clustering persistence during the presentation.</p>
+<h3 id="handover-checklist">Handover checklist</h3>
+<ul><li>Include source code, dependency instructions, and <code>.env.example</code> without real credentials.</li><li>Include this documentation and a small, permitted demonstration dataset.</li><li>Record the environment, commands, and optional dependencies used for the successful demo.</li><li>Attach actual test results and measured model metrics when available.</li><li>Explain where datasets, models, reports, and database backups are stored.</li><li>State outstanding limitations and the scope of maintenance or support.</li><li>Add institution, student, supervisor, and submission details only when the correct information is supplied.</li></ul>
+<h3 id="project-conclusion">Project conclusion</h3>
+<p>DataViz Pro combines the main stages of a structured-data analysis workflow within a modular Flask application. Its current strengths are the breadth of integrated analytical operations and the separation of routes, services, analytical modules, and persistence. A complete project evaluation should demonstrate these workflows with reproducible evidence and address the documented gaps before claiming production readiness or unrestricted AI capabilities.</p>
+<h2 id="15-source-reference-and-glossary">15 Source reference and glossary</h2>
+<h3 id="implementation-references">Implementation references</h3>
+<p>The following repository files provide the implementation reference for this document. Paths are relative to the project root.</p>
+<div class="table-scroll"><table><thead><tr><th scope="col">Subject</th><th scope="col">Source files</th></tr></thead><tbody><tr><td>Entry point and configuration</td><td><code>run.py</code>, <code>config.py</code>, <code>app/__init__.py</code>, <code>.env.example</code></td></tr><tr><td>Dependencies and deployment</td><td><code>requirements.txt</code>, <code>Dockerfile</code></td></tr><tr><td>Schema and records</td><td><code>auth/database.py</code>, <code>app/domain/dataset.py</code>, <code>app/domain/ml_model.py</code></td></tr><tr><td>Authentication and OAuth</td><td><code>app/routes/auth.py</code>, <code>app/auth_helpers.py</code>, <code>app/oauth.py</code>, <code>auth/security.py</code>, <code>docs/oauth.md</code></td></tr><tr><td>Dataset import and security</td><td><code>app/routes/datasets.py</code>, <code>app/services/dataset_service.py</code>, <code>app/security.py</code></td></tr><tr><td>Analysis and cleaning</td><td><code>app/services/analysis_service.py</code>, <code>app/services/cleaning_service.py</code>, <code>core/</code>, <code>cleaner/</code></td></tr><tr><td>Charts</td><td><code>app/routes/visualization.py</code>, <code>app/services/chart_service.py</code></td></tr><tr><td>Machine learning</td><td><code>app/services/ml_service.py</code>, <code>ml/services/model_registry.py</code>, <code>ml/services/</code></td></tr><tr><td>Explanations</td><td><code>app/services/xai_service.py</code>, <code>app/routes/xai.py</code></td></tr><tr><td>Time series and insights</td><td><code>timeseries/ts_analyzer.py</code>, <code>app/routes/timeseries.py</code>, <code>app/routes/copilot.py</code>, <code>ai_engine/</code></td></tr><tr><td>Reporting</td><td><code>app/services/report_service.py</code>, <code>app/routes/reports.py</code>, <code>ai_engine/generators/</code></td></tr><tr><td>Caching and testing</td><td><code>app/core/cache.py</code>, <code>tests/conftest.py</code>, <code>tests/test_*.py</code></td></tr></tbody></table></div>
+<h3 id="glossary">Glossary</h3>
+<div class="table-scroll"><table><thead><tr><th scope="col">Term</th><th scope="col">Meaning</th></tr></thead><tbody><tr><td>API</td><td>An interface through which software requests data or operations</td></tr><tr><td>Blueprint</td><td>A Flask component grouping related routes</td></tr><tr><td>CSRF</td><td>Cross-site request forgery; token checks protect authenticated mutations</td></tr><tr><td>DataFrame</td><td>A table-like data structure used by pandas</td></tr><tr><td>EDA</td><td>Exploratory data analysis</td></tr><tr><td>FYP</td><td>Final year project</td></tr><tr><td>Holdout set</td><td>Data reserved for evaluation rather than fitting</td></tr><tr><td>Imputation</td><td>Replacing missing values using a defined strategy</td></tr><tr><td>Leakage</td><td>Information entering training or evaluation in a way that inflates results</td></tr><tr><td>ORM</td><td>Mapping between program objects and relational database records</td></tr><tr><td>SHAP and LIME</td><td>Methods for explaining model outputs through feature contributions</td></tr><tr><td>TTL</td><td>Time to live, after which a cached value expires</td></tr><tr><td>WAL</td><td>SQLite write-ahead logging mode</td></tr><tr><td>XAI</td><td>Explainable artificial intelligence</td></tr></tbody></table></div><footer>DataViz Pro · Version 2.0.0 · Project documentation</footer></main></div></body></html>

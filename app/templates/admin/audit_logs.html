@@ -1,0 +1,56 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'settings' %}
+
+{% block title %}Audit Logs — DataViz Pro{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Audit Logs</h1>
+        <p class="dash-page-subtitle">Track all user actions and system events.</p>
+    </div>
+</div>
+
+{% if logs %}
+<div class="table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Resource</th>
+                <th>IP Address</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.display_timestamp }}</td>
+                <td class="td-name">{{ log.username or log.user_id or 'System / anonymous' }}</td>
+                <td>{{ log.action }}</td>
+                <td>{{ log.resource_type or '—' }}{% if log.resource_id %} #{{ log.resource_id }}{% endif %}</td>
+                <td class="text-muted">{{ log.ip_address or '—' }}</td>
+                <td>
+                    {% if log.success %}
+                    <span class="tag tag-success">Success</span>
+                    {% else %}
+                    <span class="tag tag-danger">Failure</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <h3>No audit logs yet</h3>
+    <p>Audit logs will appear here once users start performing actions.</p>
+</div>
+{% endif %}
+{% endblock %}

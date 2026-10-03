@@ -1,0 +1,82 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Explainable AI{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/xai.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="xai-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-content">
+            <div class="page-header-breadcrumb">
+                <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                <span class="breadcrumb-sep">/</span>
+                <span>Explainable AI</span>
+            </div>
+            <h1 class="page-header-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+                Explainable AI
+            </h1>
+            <p class="page-header-desc">Understand and interpret your trained machine learning models with transparency</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{{ url_for('ml.models_list') }}" class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
+                Saved Models
+            </a>
+        </div>
+    </div>
+
+    <!-- Method Legend -->
+    <div class="xai-method-legend">
+        <div class="xai-legend-item">
+            <span class="xai-badge xai-badge-native">Native</span>
+            <span class="xai-legend-label">Built-in feature importance</span>
+        </div>
+        <div class="xai-legend-item">
+            <span class="xai-badge xai-badge-permutation">Permutation</span>
+            <span class="xai-legend-label">Permutation importance</span>
+        </div>
+        <div class="xai-legend-item">
+            <span class="xai-badge xai-badge-shap">SHAP</span>
+            <span class="xai-legend-label">SHAP values</span>
+        </div>
+        <div class="xai-legend-item">
+            <span class="xai-badge xai-badge-lime">LIME</span>
+            <span class="xai-legend-label">Local interpretable explanations</span>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="xai-loading" id="xaiModelsLoading">
+        <div class="xai-loading-spinner"></div>
+        <span>Loading models...</span>
+    </div>
+
+    <!-- Models Grid -->
+    <div class="xai-models-grid" id="xaiModelsGrid" style="display:none;"></div>
+
+    <!-- Empty State -->
+    <div class="xai-empty" id="xaiModelsEmpty" style="display:none;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+        <h3>No Models Available</h3>
+        <p>Train and save models from the ML Studio to explore their explanations here.</p>
+        <a href="{{ url_for('datasets.index') }}" class="btn btn-primary btn-sm">Go to Datasets</a>
+    </div>
+
+    <!-- Error State -->
+    <div class="xai-error" id="xaiModelsError" style="display:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+        <span id="xaiModelsErrorMsg">Failed to load models.</span>
+        <button class="btn btn-secondary btn-xs" onclick="XAI.loadModels()">Retry</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/xai.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container %}
+
+{% block title %}Categorical — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'categorical') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- Column Selector -->
+    <div class="dash-panel dash-panel-full">
+        <div class="column-selector-row">
+            <label for="catColumnSelect" class="selector-label">Select Categorical Column:</label>
+            <select id="catColumnSelect" class="column-select">
+                <option value="">Loading columns...</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="loadCatBtn" disabled>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                Analyze
+            </button>
+        </div>
+    </div>
+
+    <!-- Analysis Results -->
+    <div class="analysis-two-col" id="catResultsContainer" style="display:none;">
+        <!-- Frequency Table -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Frequency Table <span class="panel-subtitle" id="catColName"></span></h2>
+            <div class="cat-summary" id="catSummary"></div>
+            <div class="stats-table-wrap">
+                <table class="stats-table" id="freqTable">
+                    <thead>
+                        <tr>
+                            <th>Value</th>
+                            <th>Count</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody id="freqBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Value Distribution <span class="panel-subtitle" id="catBarColName"></span></h2>
+            <div id="catBarChart" class="plotly-chart"></div>
+        </div>
+    </div>
+
+    <!-- All Categorical Columns Overview -->
+    <div class="dash-panel dash-panel-full" id="catOverviewPanel" style="display:none;">
+        <h2 class="panel-title">All Categorical Columns</h2>
+        <div class="stats-table-wrap">
+            <table class="stats-table" id="catOverviewTable">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Unique Values</th>
+                        <th>Total Count</th>
+                        <th>Top Value</th>
+                        <th>Top %</th>
+                        <th>Cardinality</th>
+                    </tr>
+                </thead>
+                <tbody id="catOverviewBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- No Categorical Message -->
+    <div id="noCatMsg" style="display:none;" class="empty-state compact">
+        <p>No categorical columns found in this dataset.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.initCategorical("{{ dataset.id }}");
+</script>
+{% endblock %}

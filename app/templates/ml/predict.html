@@ -1,0 +1,18 @@
+{% extends 'layouts/dashboard.html' %}
+{% block title %}Generate predictions — DataViz Pro{% endblock %}
+{% block content %}
+<div class="dash-page-header"><div><h1>Generate predictions</h1><p>{{ model.model_name }}</p></div><a href="/models" class="btn btn-secondary">Saved models</a></div>
+<section class="dash-panel" style="padding:2rem;max-width:800px">
+    <h2>Upload new data</h2>
+    <p>Use a UTF-8 CSV containing the columns below. The saved model’s preprocessing is applied automatically. Your download includes the original rows and a prediction column.</p>
+    <p><strong>Required columns:</strong> {{ model.features | join(', ') }}</p>
+    <p>Up to 10,000 rows and 10 MB. A target column is not required.</p>
+    {% if error %}<p role="alert" class="text-danger">{{ error }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="predictionFile">CSV file</label>
+        <input class="form-control" type="file" id="predictionFile" name="file" accept=".csv" required>
+        <button class="btn btn-primary" style="margin-top:1rem" type="submit">Generate and download predictions</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'settings' %}
+
+{% block title %}Settings — DataViz Pro{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Settings</h1>
+        <p class="dash-page-subtitle">Manage your account and application preferences.</p>
+    </div>
+</div>
+
+<div class="settings-grid">
+    <div class="dash-panel">
+        <div class="settings-nav">
+            <a href="?tab=account" class="settings-nav-item {% if active_tab == 'account' %}active{% endif %}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Account
+            </a>
+            <a href="?tab=security" class="settings-nav-item {% if active_tab == 'security' %}active{% endif %}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Security
+            </a>
+            <a href="?tab=appearance" class="settings-nav-item {% if active_tab == 'appearance' %}active{% endif %}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20"/></svg>
+                Appearance
+            </a>
+            <a href="?tab=notifications" class="settings-nav-item {% if active_tab == 'notifications' %}active{% endif %}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                Notifications
+            </a>
+        </div>
+    </div>
+    
+    <div class="dash-panel settings-content-panel">
+        {% if active_tab == 'account' %}
+        <div class="settings-content-heading">
+            <div>
+                <h2 class="panel-title">Account Details</h2>
+                <p class="settings-content-subtitle">Keep your profile information up to date.</p>
+            </div>
+            <div class="account-avatar" aria-hidden="true">{{ (user.full_name or user.username)[:1] | upper }}</div>
+        </div>
+        <form method="POST" action="{{ url_for('dashboard.settings') }}" class="account-form">
+            <input type="hidden" name="action" value="update_account">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group account-field account-field-wide">
+                <label>Username</label>
+                <input type="text" value="@{{ user.username }}" disabled class="input-disabled">
+                <small class="form-hint">Username cannot be changed.</small>
+            </div>
+            <div class="form-group account-field">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required>
+            </div>
+            <div class="form-group account-field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required>
+            </div>
+            <div class="form-group account-field">
+                <label>Role</label>
+                <input type="text" value="{{ user.role.value | capitalize }}" disabled class="input-disabled">
+            </div>
+            <div class="account-form-actions">
+                <span class="form-hint">Changes apply to your DataViz Pro profile.</span>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+
+        {% elif active_tab == 'security' %}
+        <div class="settings-content-heading">
+            <div>
+                <h2 class="panel-title">Change Password</h2>
+                <p class="settings-content-subtitle">Protect your account with a strong, unique password.</p>
+            </div>
+            <div class="settings-section-icon" aria-hidden="true">&#128274;</div>
+        </div>
+        <form method="POST" action="{{ url_for('dashboard.settings') }}" class="settings-form">
+            <input type="hidden" name="action" value="update_password">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" required>
+            </div>
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" required minlength="8">
+                <small class="form-hint">Must be at least 8 characters.</small>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+            </div>
+            
+            <div class="settings-form-actions">
+                <span class="form-hint">Use at least 8 characters for better security.</span>
+                <button type="submit" class="btn btn-primary">Update Password</button>
+            </div>
+        </form>
+
+        {% elif active_tab == 'appearance' %}
+        <div class="settings-content-heading">
+            <div>
+                <h2 class="panel-title">Appearance &amp; Theme</h2>
+                <p class="settings-content-subtitle">Choose how DataViz Pro looks across your workspace.</p>
+            </div>
+            <div class="settings-section-icon" aria-hidden="true">&#9728;</div>
+        </div>
+        <form method="POST" action="{{ url_for('dashboard.settings') }}" class="settings-form">
+            <input type="hidden" name="action" value="update_preferences">
+            <input type="hidden" name="notifications_enabled" value="{{ 'on' if user.notifications_enabled else 'off' }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group">
+                <label for="theme">Theme Preference</label>
+                <select id="theme" name="theme" class="form-control">
+                    <option value="light" {% if user.theme == 'light' %}selected{% endif %}>Light Mode</option>
+                    <option value="dark" {% if user.theme == 'dark' %}selected{% endif %}>Dark Mode</option>
+                    <option value="system" {% if user.theme == 'system' %}selected{% endif %}>System Default</option>
+                </select>
+                <small class="form-hint">Choose how DataViz Pro looks to you.</small>
+            </div>
+            
+            <div class="settings-form-actions">
+                <span class="form-hint">Your preference is saved to your account.</span>
+                <button type="submit" class="btn btn-primary">Save Appearance</button>
+            </div>
+        </form>
+        
+        {% elif active_tab == 'notifications' %}
+        <h2 class="panel-title">Notification Preferences</h2>
+        <form method="POST" action="{{ url_for('dashboard.settings') }}">
+            <input type="hidden" name="action" value="update_preferences">
+            <input type="hidden" name="theme" value="{{ user.theme }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="notifications_enabled" name="notifications_enabled" {% if user.notifications_enabled %}checked{% endif %}>
+                <label for="notifications_enabled" style="margin-bottom: 0;">Enable Application Notifications</label>
+            </div>
+            <small class="form-hint" style="display: block; margin-bottom: 20px;">Receive alerts when analyses and reports are finished generating.</small>
+            
+            <button type="submit" class="btn btn-primary">Save Notifications</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container, priority_badge %}
+
+{% block title %}Insights — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'insights') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- Insights Summary -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <span class="kpi-value" id="insightTotal">—</span>
+            <span class="kpi-label">Total Insights</span>
+        </div>
+        <div class="kpi-card kpi-card-warning">
+            <span class="kpi-value" id="insightHigh">—</span>
+            <span class="kpi-label">High Priority</span>
+        </div>
+        <div class="kpi-card kpi-card-info">
+            <span class="kpi-value" id="insightMedium">—</span>
+            <span class="kpi-label">Medium Priority</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-value" id="insightLow">—</span>
+            <span class="kpi-label">Low Priority</span>
+        </div>
+    </div>
+
+    <!-- New AI Engine Sections -->
+    <div id="aiEngineSections" style="display:none; gap: 20px; flex-direction: column; margin-bottom: 30px;">
+        <!-- Anomalies -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Detected Anomalies</h2>
+            <div id="anomaliesContainer">
+                <p class="text-muted">Loading...</p>
+            </div>
+        </div>
+        <!-- Root Causes -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Root Cause Analysis</h2>
+            <div id="rootCausesContainer">
+                <p class="text-muted">Loading...</p>
+            </div>
+        </div>
+        <!-- Recommendations -->
+        <div class="dash-panel">
+            <h2 class="panel-title">Business Recommendations</h2>
+            <div id="recommendationsContainer">
+                <p class="text-muted">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="insights-filter-row">
+        <button class="btn btn-sm btn-filter active" data-filter="all">All</button>
+        <button class="btn btn-sm btn-filter" data-filter="high">High</button>
+        <button class="btn btn-sm btn-filter" data-filter="medium">Medium</button>
+        <button class="btn btn-sm btn-filter" data-filter="low">Low</button>
+        <button class="btn btn-sm btn-filter" data-filter="quality">Quality</button>
+        <button class="btn btn-sm btn-filter" data-filter="statistics">Statistics</button>
+        <button class="btn btn-sm btn-filter" data-filter="correlation">Correlation</button>
+        <button class="btn btn-sm btn-filter" data-filter="outliers">Outliers</button>
+        <button class="btn btn-sm btn-filter" data-filter="trends">Trends</button>
+    </div>
+
+    <!-- Insights List -->
+    <div class="insights-list" id="insightsList">
+        <p class="text-muted">Loading insights...</p>
+    </div>
+
+    <!-- No Insights -->
+    <div id="noInsightsMsg" style="display:none;" class="empty-state compact">
+        <p>No significant insights were generated for this dataset.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+    AnalysisWorkspace.loadInsights("{{ dataset.id }}");
+</script>
+{% endblock %}

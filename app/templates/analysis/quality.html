@@ -1,0 +1,94 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'analysis' %}
+{% from "analysis/_macros.html" import analysis_header, loading_spinner, error_container %}
+
+{% block title %}Quality — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analysis.css') }}">
+{% endblock %}
+
+{% block content %}
+{{ analysis_header(dataset, 'quality') }}
+{{ loading_spinner() }}
+{{ error_container() }}
+
+<div class="analysis-content" id="analysisContent" style="display:none;">
+
+    <!-- Quality Score -->
+    <div class="dash-panel dash-panel-full">
+        <h2 class="panel-title">Overall Data Quality</h2>
+        <div class="quality-overview-grid">
+            <div class="quality-score-wrap large" id="qualityScoreWrap">
+                <div class="quality-score-ring large">
+                    <span class="quality-score-value" id="qualityScoreValue">—</span>
+                </div>
+                <span class="quality-score-label">Quality Score (0-100)</span>
+            </div>
+            <div class="quality-summary-cards">
+                <div class="qs-card">
+                    <span class="qs-value" id="qsTotalMissing">—</span>
+                    <span class="qs-label">Total Missing</span>
+                </div>
+                <div class="qs-card">
+                    <span class="qs-value" id="qsMissingPct">—</span>
+                    <span class="qs-label">Missing %</span>
+                </div>
+                <div class="qs-card">
+                    <span class="qs-value" id="qsDuplicates">—</span>
+                    <span class="qs-label">Duplicate Rows</span>
+                </div>
+                <div class="qs-card">
+                    <span class="qs-value" id="qsTotalCells">—</span>
+                    <span class="qs-label">Total Cells</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Missing Values per Column -->
+    <div class="dash-panel dash-panel-full">
+        <h2 class="panel-title">Missing Values by Column</h2>
+        <div id="missingTableWrap">
+            <table class="schema-table" id="missingTable">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Missing Count</th>
+                        <th>Missing %</th>
+                        <th>Severity</th>
+                    </tr>
+                </thead>
+                <tbody id="missingBody">
+                    <tr><td colspan="4" class="table-empty">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="noMissingMsg" style="display:none;" class="text-muted" style="padding:1rem;">
+            No missing values detected in this dataset.
+        </div>
+    </div>
+
+    <!-- Consistency Issues -->
+    <div class="dash-panel dash-panel-full" id="consistencyPanel" style="display:none;">
+        <h2 class="panel-title">Consistency Issues</h2>
+        <div id="consistencyIssues" class="consistency-issues-list"></div>
+    </div>
+
+    <!-- Type Issues -->
+    <div class="dash-panel dash-panel-full" id="typeIssuesPanel" style="display:none;">
+        <h2 class="panel-title">Type Issues</h2>
+        <div id="typeIssues" class="consistency-issues-list"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/components.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+AnalysisWorkspace.loadQuality("{{ dataset.id }}");
+</script>
+{% endblock %}

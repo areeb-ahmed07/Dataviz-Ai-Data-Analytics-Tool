@@ -1,0 +1,185 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'ai-copilot' %}
+
+{% block title %}AI Copilot — {{ dataset.name }} — DataViz Pro{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+.copilot-workspace { display: flex; flex-direction: column; gap: 20px; }
+.copilot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.copilot-card { background: white; border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); min-height: 250px; }
+.copilot-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.copilot-icon { color: var(--primary-color); }
+.insight-item { padding: 10px; border-radius: 6px; background: var(--bg-color); margin-bottom: 10px; }
+.insight-title { font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
+.insight-desc { font-size: 0.9em; color: var(--text-muted); }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 600; text-transform: uppercase; }
+.badge-high { background: #FEE2E2; color: #DC2626; }
+.badge-medium { background: #FEF3C7; color: #D97706; }
+.badge-low { background: #E0E7FF; color: #4338CA; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+    <div class="dash-title-group">
+        <a href="{{ url_for('copilot.index') }}" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        </a>
+        <h1 class="dash-page-title">AI Copilot</h1>
+        <p class="dash-page-subtitle">{{ dataset.name }}</p>
+    </div>
+    <div class="dash-actions">
+        <button id="btnRefresh" class="btn btn-primary">Refresh Insights</button>
+    </div>
+</div>
+
+<div class="copilot-workspace">
+    
+    <div id="loadingState" style="display:flex;align-items:center;justify-content:center;height:300px;background:white;border-radius:8px;border:1px solid var(--border-color);">
+        <div style="text-align:center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" class="mb-3" style="animation: spin 2s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <p>Copilot is analyzing your data...</p>
+        </div>
+    </div>
+    
+    <div id="errorState" style="display:none;padding:20px;background:#FEE2E2;color:#DC2626;border-radius:8px;border:1px solid #FCA5A5;"></div>
+    
+    <div id="copilotContent" class="copilot-grid" style="display:none;">
+        
+        <!-- Trends -->
+        <div class="copilot-card">
+            <div class="copilot-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copilot-icon"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                <h3 style="margin:0;">Key Trends</h3>
+            </div>
+            <div id="trendsList"></div>
+        </div>
+        
+        <!-- Anomalies -->
+        <div class="copilot-card">
+            <div class="copilot-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copilot-icon"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                <h3 style="margin:0;">Anomalies Detected</h3>
+            </div>
+            <p id="anomaliesSummary" class="text-muted mb-3"></p>
+            <div id="anomaliesList"></div>
+        </div>
+        
+        <!-- Root Causes -->
+        <div class="copilot-card">
+            <div class="copilot-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copilot-icon"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
+                <h3 style="margin:0;">Root Cause Analysis</h3>
+            </div>
+            <div id="rootCausesList"></div>
+        </div>
+        
+        <!-- Recommendations -->
+        <div class="copilot-card">
+            <div class="copilot-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="copilot-icon"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                <h3 style="margin:0;">Business Recommendations</h3>
+            </div>
+            <div id="recommendationsList"></div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    function getBadgeClass(level) {
+        if (!level) return 'badge-low';
+        const str = String(level).toLowerCase();
+        if (str.includes('high')) return 'badge-high';
+        if (str.includes('medium')) return 'badge-medium';
+        return 'badge-low';
+    }
+
+    async function loadCopilotInsights() {
+        const loading = document.getElementById('loadingState');
+        const content = document.getElementById('copilotContent');
+        const errorState = document.getElementById('errorState');
+        const btnRefresh = document.getElementById('btnRefresh');
+        
+        loading.style.display = 'flex';
+        content.style.display = 'none';
+        errorState.style.display = 'none';
+        btnRefresh.disabled = true;
+        
+        try {
+            const res = await fetch(`/copilot/api/{{ dataset.id }}/insights`);
+            const data = await res.json();
+            
+            if (data.error) {
+                errorState.innerText = `Error: ${data.error}`;
+                errorState.style.display = 'block';
+                loading.style.display = 'none';
+                return;
+            }
+            
+            // Trends
+            const trendsHtml = data.trends.map(t => `
+                <div class="insight-item">
+                    <div class="insight-title">${t.column} <span class="badge badge-low">${t.direction}</span></div>
+                    <div class="insight-desc">${t.description || `Change: ${t.pct_change.toFixed(1)}%`}</div>
+                </div>
+            `).join('') || '<div class="text-muted">No significant trends detected.</div>';
+            document.getElementById('trendsList').innerHTML = trendsHtml;
+            
+            // Anomalies
+            document.getElementById('anomaliesSummary').innerText = `Found ${data.anomalies.count} anomalous rows (${data.anomalies.percentage.toFixed(1)}%).`;
+            const anomaliesHtml = data.anomalies.items.map(a => `
+                <div class="insight-item">
+                    <div class="insight-title">Row ${a.index} <span class="badge badge-high">Score: ${a.score.toFixed(2)}</span></div>
+                    <div class="insight-desc">${a.description} (${a.method})</div>
+                </div>
+            `).join('') || '<div class="text-muted">No major anomalies detected.</div>';
+            document.getElementById('anomaliesList').innerHTML = anomaliesHtml;
+            
+            // Root Causes
+            const rcHtml = data.root_causes.map(r => `
+                <div class="insight-item">
+                    <div class="insight-title">${r.feature} <span class="badge badge-low">Impact score: ${r.impact_score.toFixed(2)}</span></div>
+                    <div class="insight-desc mb-1">${r.description}</div>
+                    <div class="insight-desc"><strong>Condition:</strong> ${r.condition} (${r.affected_rows} rows)</div>
+                </div>
+            `).join('') || '<div class="text-muted">No critical root causes found.</div>';
+            document.getElementById('rootCausesList').innerHTML = rcHtml;
+            
+            // Recommendations
+            const recHtml = data.recommendations.map(r => `
+                <div class="insight-item" style="border-left: 3px solid var(--primary-color);">
+                    <div class="insight-title">${r.title}</div>
+                    <div class="insight-desc mb-1">${r.description}</div>
+                    <div class="insight-desc text-success"><strong>Impact:</strong> ${r.expected_impact}</div>
+                </div>
+            `).join('') || '<div class="text-muted">No specific recommendations at this time.</div>';
+            document.getElementById('recommendationsList').innerHTML = recHtml;
+            
+            loading.style.display = 'none';
+            content.style.display = 'grid';
+            
+        } catch (err) {
+            errorState.innerText = `Error connecting to Copilot API: ${err}`;
+            errorState.style.display = 'block';
+            loading.style.display = 'none';
+        } finally {
+            btnRefresh.disabled = false;
+        }
+    }
+    
+    document.getElementById('btnRefresh').addEventListener('click', loadCopilotInsights);
+    
+    // Auto-load on open
+    loadCopilotInsights();
+});
+</script>
+{% endblock %}

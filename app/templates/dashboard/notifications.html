@@ -1,0 +1,7 @@
+{% extends "layouts/dashboard.html" %}
+{% set active_page = 'notifications' %}
+{% block title %}Notifications — DataViz Pro{% endblock %}
+{% block content %}
+<div class="dash-page-header"><div><h1 class="dash-page-title">Notifications</h1><p class="dash-page-subtitle">Updates and activity from your workspace.</p></div></div>
+<section class="dash-panel notification-center"><div class="notification-empty-icon">✓</div><h2 class="panel-title">You’re all caught up</h2><p>Completed analyses and generated reports will appear here when they need your attention.</p><a href="{{ url_for('dashboard.settings', tab='notifications') }}" class="btn btn-secondary">Notification settings</a></section>
+{% endblock %}
