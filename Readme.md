@@ -53,3 +53,11 @@ Keep `.env`, `dataviz_pro.db` (including SQLite WAL/SHM files), `uploads/`, `rep
 ## Deployment
 
 `run.py` provides the development server. The Dockerfile uses Gunicorn on Linux, runs as a non-root user, and exposes port 5000. Supply environment secrets and persistent storage when deploying; configure HTTPS and matching OAuth callback URLs for the public address.
+
+### Deploying to Vercel
+
+The root `vercel.json` routes requests to `api/index.py`, which exports the production Flask app. Vercel installs the root `requirements.txt` for the Python function.
+
+Configure a stable `SECRET_KEY` in Vercel's project environment variables. For persistent user accounts and data, also configure `DATABASE_URL` to a hosted PostgreSQL database; the SQLite fallback under `/tmp` is temporary and can be lost between function instances. Uploads and generated reports also use `/tmp` by default on Vercel, so they are temporary; use persistent object storage before relying on those features in production.
+
+This project has a large scientific/ML dependency set in `requirements.txt`. If deployment fails while installing packages or reports that the function bundle is too large, the Vercel build/runtime log is needed to identify which dependencies or feature routes must be separated. Vercel serverless functions are also not a good fit for long-running model training.

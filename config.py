@@ -32,11 +32,11 @@ class Config:
     DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 
     # Uploads
-    UPLOAD_FOLDER = os.path.join(basedir, "uploads")
+    UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", os.path.join(basedir, "uploads"))
     MAX_CONTENT_LENGTH = int(os.environ.get("MAX_CONTENT_LENGTH", 50 * 1024 * 1024))  # 50 MB
 
     # Reports output directory
-    REPORTS_FOLDER = os.path.join(basedir, "reports")
+    REPORTS_FOLDER = os.environ.get("REPORTS_FOLDER", os.path.join(basedir, "reports"))
 
     # Session
     SESSION_PERMANENT = True
