@@ -94,6 +94,14 @@ gunicorn --worker-class gthread --workers 1 --threads 4 --timeout 120 \
 
 `/health` is the health-check path. `PYTHON_VERSION` (and `.python-version`) pin Python 3.11.9; change both if you need a different interpreter. Set `OPENAI_API_KEY` in the dashboard to enable the AI features — it is declared with `sync: false` so it is never committed.
 
+**First run and the administrator account.** The database starts empty. The first time the auth service is constructed it seeds an `admin` account with a cryptographically random password and prints it once to standard output:
+
+```
+[AuthService] Seeded default admin: admin / <password>
+```
+
+On Render, open the service's **Logs** tab, copy that password, and sign in at `/login` using the username `admin`. Because free instances have ephemeral storage, the database is wiped on every deploy and restart, so this line is re-emitted with a **new** password each time — always take the latest value from the logs. Seeding is skipped as soon as any user exists.
+
 **Storage on the free plan.** Render's free instances have an ephemeral filesystem. `dataviz_pro.db`, `uploads/` and `reports/` are recreated on every deploy and restart, so user accounts, uploaded datasets and generated reports do not survive, and free services spin down after 15 minutes of inactivity. Treat a free Render deploy as a public demo only.
 
 To make a Render deployment persistent:
