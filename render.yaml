@@ -1,0 +1,51 @@
+# ── DataViz Pro — Render Blueprint ─────────────────────────────────
+#
+# Deploys the Flask app on Render's native Python runtime.
+# Apply it via: Render Dashboard → New + → Blueprint → select this repo.
+#
+# ⚠ STORAGE WARNING — this blueprint targets Render's FREE plan, whose
+# filesystem is ephemeral. dataviz_pro.db, uploads/ and reports/ are recreated
+# on every deploy and restart, so accounts, uploaded datasets and generated
+# reports do NOT survive. This is suitable as a public demo only.
+# For persistence, move to a paid instance type, attach a disk, and point
+# DATABASE_URL / UPLOAD_FOLDER / REPORTS_FOLDER at the disk mount path.
+
+services:
+  - type: web
+    name: dataviz-pro
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /health
+
+    buildCommand: >-
+      pip install --upgrade pip &&
+      pip install --no-input -r requirements.txt
+
+    # Bind to the port Render assigns via $PORT.
+    # A single gthread worker with 4 threads keeps the memory footprint within
+    # the free plan's 512 MB while still serving concurrent requests.
+    # The app factory is invoked with the 'production' config (DEBUG off).
+    startCommand: >-
+      gunicorn --worker-class gthread --workers 1 --threads 4
+      --timeout 120 --bind 0.0.0.0:$PORT "app:create_app('production')"
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+      # Render generates this once and keeps it stable across deploys.
+      # Without it the app mints a fresh random key on every boot, which
+      # invalidates all sessions and CSRF tokens whenever the service restarts.
+      - key: SECRET_KEY
+        generateValue: true
+
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+      # Optional. Leave unset to keep AI features disabled, or set a value in
+      # the Render dashboard to enable the copilot and AI-generated insights.
+      - key: OPENAI_API_KEY
+        sync: false

@@ -270,6 +270,7 @@ img {
     color: var(--color-text-secondary);
     padding: 0.4rem 0;
     position: relative;
+    white-space: nowrap;
     transition: color var(--transition-fast);
 }
 
@@ -813,7 +814,28 @@ img {
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .navbar {
-        padding: 0.75rem 1rem;
+        padding: 0.7rem 1rem;
+        /* Let the links drop to their own row instead of being crushed. */
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+    }
+
+    .navbar-brand a {
+        font-size: 1.05rem;
+        gap: 6px;
+    }
+
+    .navbar-brand-image {
+        flex: 0 0 44px;
+        width: 44px;
+        height: 38px;
+    }
+
+    .navbar-links {
+        margin-left: auto;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .hero {
@@ -843,11 +865,49 @@ img {
 }
 
 @media (max-width: 480px) {
+    .navbar {
+        padding: 0.6rem 0.85rem;
+    }
+
+    .navbar-brand a {
+        font-size: 1rem;
+    }
+
+    .navbar-links {
+        gap: 0.75rem;
+    }
+
+    .navbar-links a {
+        font-size: 0.85rem;
+    }
+
+    .hero {
+        padding: 2.25rem 1rem;
+    }
+
+    .hero-brand-image {
+        width: 170px;
+        height: 124px;
+    }
+
     .hero-title {
         font-size: 1.875rem;
     }
 
     .hero-description {
         font-size: 1rem;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+
+    .features {
+        padding: 2.5rem 1rem;
     }
 }

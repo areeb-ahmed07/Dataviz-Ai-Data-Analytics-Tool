@@ -151,14 +151,19 @@
 
 /* Monochrome sun/moon switch; state follows the existing theme controller. */
 .theme-toggle.theme-switch {
+    /* Geometry is variable-driven so small screens can use a compact switch. */
+    --switch-w: 88px;
+    --switch-h: 44px;
+    --switch-pad: 4px;
+    --switch-thumb: 34px;
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: space-around;
-    flex: 0 0 88px;
-    width: 88px;
-    height: 44px;
-    padding: 4px;
+    flex: 0 0 var(--switch-w);
+    width: var(--switch-w);
+    height: var(--switch-h);
+    padding: var(--switch-pad);
     border: 1px solid #bcbec6;
     border-radius: 999px;
     background: #e9eaed;
@@ -170,10 +175,10 @@
 }
 .theme-switch .theme-switch-thumb {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 34px;
-    height: 34px;
+    top: var(--switch-pad);
+    left: var(--switch-pad);
+    width: var(--switch-thumb);
+    height: var(--switch-thumb);
     border-radius: 50%;
     background: #f8f8f8;
     box-shadow: 0 2px 5px #0d0e1026, 0 0 0 1px #0d0e100a;
@@ -196,7 +201,7 @@
     color: #bcbec6;
 }
 [data-theme="dark"] .theme-switch .theme-switch-thumb {
-    transform: translateX(44px);
+    transform: translateX(calc(var(--switch-w) - var(--switch-thumb) - var(--switch-pad) * 2 - 2px));
     background: #35373c;
     box-shadow: 0 2px 5px #0006, inset 0 1px 0 #ffffff12;
 }
@@ -209,6 +214,21 @@
     outline-offset: 3px;
 }
 .theme-toggle.theme-switch:disabled { cursor: progress; opacity: .6; }
+
+/* Compact switch on small screens so it does not crowd the navbar/topbar. */
+@media (max-width: 640px) {
+    .theme-toggle.theme-switch {
+        --switch-w: 64px;
+        --switch-h: 36px;
+        --switch-thumb: 26px;
+    }
+    .theme-toggle.theme-switch .theme-sun,
+    .theme-toggle.theme-switch .theme-moon {
+        width: 15px;
+        height: 15px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .theme-toggle.theme-switch,
     .theme-switch .theme-switch-thumb { transition: none; }

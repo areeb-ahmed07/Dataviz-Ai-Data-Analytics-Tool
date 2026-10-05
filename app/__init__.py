@@ -63,6 +63,15 @@ def create_app(config_name: str = "default") -> Flask:
     # Custom cookie name to avoid fingerprinting
     app.config["SESSION_COOKIE_NAME"] = "dvpro_session"
 
+    # ── Reverse-proxy support (Render and similar hosts) ───────────
+    # The platform terminates TLS upstream and forwards X-Forwarded-Proto.
+    # Without this, Flask builds http:// URLs for _external=True (used by the
+    # OAuth callbacks) and sees the proxy address as the client.
+    if os.environ.get("RENDER") or os.environ.get("BEHIND_PROXY"):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
     # ── Ensure required directories exist ────────────────────────
     for folder_key in ("UPLOAD_FOLDER", "REPORTS_FOLDER"):
         path = app.config.get(folder_key)

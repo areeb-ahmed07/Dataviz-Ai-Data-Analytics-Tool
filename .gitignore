@@ -49,3 +49,6 @@ htmlcov/
 Thumbs.db
 .vscode/
 .idea/
+
+# DSH sandbox diagnostics (local only — must never ship to a deploy)
+acl-recovery/
