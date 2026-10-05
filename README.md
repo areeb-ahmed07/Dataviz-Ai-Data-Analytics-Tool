@@ -110,3 +110,5 @@ To make a Render deployment persistent:
 - For the database, either point `DATABASE_URL` at a file on that same disk, or configure a Render Postgres instance. Note that Postgres covers only accounts and metadata; uploads and reports still require the disk.
 
 `DATABASE_URL` accepts any SQLAlchemy URL. Use a `postgresql://…` scheme — SQLAlchemy 2.0 rejects the legacy `postgres://` form.
+
+**Memory on the free plan.** Free instances have 512 MB of RAM, and importing the application loads the scientific stack eagerly: `create_app` reaches roughly 280 MB resident before it serves a single request. The blueprint therefore runs a single gunicorn worker with four threads — do not raise `--workers`, as a second worker would add a whole second copy of that stack and exceed the limit. Around 230 MB of headroom remains, which is comfortable for small datasets but will be exhausted by large uploads, AutoML training runs, or SHAP explanations.
