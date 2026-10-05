@@ -27,10 +27,11 @@ services:
     # Bind to the port Render assigns via $PORT.
     # A single gthread worker with 4 threads keeps the memory footprint within
     # the free plan's 512 MB while still serving concurrent requests.
-    # The app factory is invoked with the 'production' config (DEBUG off).
+    # wsgi:app is a plain module:attribute target, so this needs no shell
+    # quoting around a factory call and cannot be mangled by the dashboard.
     startCommand: >-
       gunicorn --worker-class gthread --workers 1 --threads 4
-      --timeout 120 --bind 0.0.0.0:$PORT "app:create_app('production')"
+      --timeout 120 --bind 0.0.0.0:$PORT wsgi:app
 
     envVars:
       - key: PYTHON_VERSION

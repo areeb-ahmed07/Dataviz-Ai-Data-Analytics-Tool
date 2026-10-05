@@ -85,12 +85,14 @@ The repository includes a `render.yaml` blueprint that targets Render's native P
 2. In the Render Dashboard choose **New + → Blueprint** and select the repository. Render reads `render.yaml`, creates the `dataviz-pro` web service, and generates a stable `SECRET_KEY`.
 3. Apply the blueprint. The first build installs the full scientific/ML dependency set and takes several minutes.
 
-The start command binds to the port Render assigns through `$PORT`:
+The start command binds to the port Render assigns through `$PORT` and targets [wsgi.py](wsgi.py), which calls the app factory with the `production` config:
 
 ```
 gunicorn --worker-class gthread --workers 1 --threads 4 --timeout 120 \
-         --bind 0.0.0.0:$PORT "app:create_app('production')"
+         --bind 0.0.0.0:$PORT wsgi:app
 ```
+
+`wsgi:app` is used rather than `"app:create_app('production')"` so the command needs no shell quoting — an unquoted factory call would be a shell syntax error, and the quotes are easy to lose when the command is pasted into a dashboard field. If a service was created manually instead of through the blueprint, Render pre-fills `gunicorn your_application:app`; replace it with the line above, otherwise the deploy fails at startup with `ModuleNotFoundError: No module named 'your_application'`.
 
 `/health` is the health-check path. `PYTHON_VERSION` (and `.python-version`) pin Python 3.11.9; change both if you need a different interpreter. Set `OPENAI_API_KEY` in the dashboard to enable the AI features — it is declared with `sync: false` so it is never committed.
 
