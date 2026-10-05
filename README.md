@@ -92,7 +92,7 @@ gunicorn --worker-class gthread --workers 1 --threads 4 --timeout 120 \
          --bind 0.0.0.0:$PORT wsgi:app
 ```
 
-`wsgi:app` is used rather than `"app:create_app('production')"` so the command needs no shell quoting — an unquoted factory call would be a shell syntax error, and the quotes are easy to lose when the command is pasted into a dashboard field. If a service was created manually instead of through the blueprint, Render pre-fills `gunicorn your_application:app`; replace it with the line above, otherwise the deploy fails at startup with `ModuleNotFoundError: No module named 'your_application'`.
+`wsgi:app` is used rather than `"app:create_app('production')"` so the command needs no shell quoting — an unquoted factory call would be a shell syntax error, and the quotes are easy to lose when the command is pasted into a dashboard field. If a service was created manually instead of through the blueprint, Render pre-fills its start command with `gunicorn your_application:app`, which fails at startup with `ModuleNotFoundError: No module named 'your_application'`. Setting the Start Command in the dashboard to the line above is the correct fix, but [your_application.py](your_application.py) re-exports the same WSGI application so that a dashboard-created service also boots with no settings change.
 
 `/health` is the health-check path. `PYTHON_VERSION` (and `.python-version`) pin Python 3.11.9; change both if you need a different interpreter. Set `OPENAI_API_KEY` in the dashboard to enable the AI features — it is declared with `sync: false` so it is never committed.
 
